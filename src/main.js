@@ -1,22 +1,22 @@
-import './assets/main.css'
+import "./assets/main.css";
 
-import { createApp } from 'vue'
-import App from './App.vue'
-import router from './router'
-import { Quasar } from 'quasar'
-import { IypApi } from '@/plugins/IypApi'
+import { createApp } from "vue";
+import App from "./App.vue";
+import router from "./router";
+import { Quasar } from "quasar";
+import { IypApi } from "@/plugins/IypApi";
 
-import '@quasar/extras/roboto-font/roboto-font.css'
-import '@quasar/extras/material-icons/material-icons.css'
+import "@quasar/extras/roboto-font/roboto-font.css";
+import "@quasar/extras/material-icons/material-icons.css";
 
-import 'quasar/dist/quasar.css'
+import "quasar/dist/quasar.css";
 
-const app = createApp(App)
+const app = createApp(App);
 
-app.use(router)
+app.use(router);
 app.use(Quasar, {
-    plugins: {}
-})
-app.use(IypApi)
+  plugins: {},
+});
+app.use(IypApi);
 
-app.mount('#app')
+app.mount("#app");

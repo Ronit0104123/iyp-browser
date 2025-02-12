@@ -1,35 +1,30 @@
 <script setup>
-import { ref } from 'vue'
-import InputPanel from '@/components/InputPanel.vue'
-import OutputPanel from '@/components/OutputPanel.vue'
-import { uid } from 'quasar'
+import { ref } from "vue";
+import InputPanel from "@/components/InputPanel.vue";
+import OutputPanel from "@/components/OutputPanel.vue";
+import { uid } from "quasar";
 
-const queries = ref([])
+const queries = ref([]);
 
 const runQuery = (query) => {
-  const uuid = uid()
-	queries.value.push({ query, uuid })
-}
+  const uuid = uid();
+  queries.value.push({ query, uuid });
+};
 
 const clearQuery = (uuid) => {
-  queries.value = queries.value.filter((query) => query.uuid !== uuid)
-}
+  queries.value = queries.value.filter((query) => query.uuid !== uuid);
+};
 </script>
 
 <template>
   <div padding>
     <div class="container">
       <div class="browser-input-container">
-        <InputPanel
-          @run="runQuery"
-        />
+        <InputPanel @run="runQuery" />
       </div>
       <div class="browser-output-container">
         <div v-for="query in queries" :key="query.uuid">
-          <OutputPanel
-            :query="query.query"
-            @clear="clearQuery(query.uuid)"
-          />
+          <OutputPanel :query="query.query" @clear="clearQuery(query.uuid)" />
         </div>
       </div>
     </div>

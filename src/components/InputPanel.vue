@@ -1,55 +1,62 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import * as monaco from 'monaco-editor'
+import { ref, onMounted } from "vue";
+import * as monaco from "monaco-editor";
 
-const code = ref()
-let editor = null
+const code = ref();
+let editor = null;
 
-const emits = defineEmits(['run', 'clear'])
+const emits = defineEmits(["run", "clear"]);
 
-const props = defineProps(['query', 'serveInOutput'])
+const props = defineProps(["query", "serveInOutput"]);
 
 const runQuery = () => {
-  const getValue = editor.getValue()
-  if (getValue !== '') {
-    emits('run', getValue)
+  const getValue = editor.getValue();
+  if (getValue !== "") {
+    emits("run", getValue);
     if (!props.serveInOutput) {
-      editor.setValue('')
+      editor.setValue("");
     }
   }
-}
+};
 
 const clearQuery = () => {
   if (!props.serveInOutput) {
-    editor.setValue('')
+    editor.setValue("");
   } else {
-    emits('clear')
+    emits("clear");
   }
-}
+};
 
 onMounted(() => {
   editor = monaco.editor.create(code.value, {
     value: props.query,
-    language: 'cypher',
-    theme: 'vs',
+    language: "cypher",
+    theme: "vs",
     minimap: {
-      enabled: false
+      enabled: false,
     },
-    automaticLayout: true
-  })
-  window.addEventListener('hitResult', (e) => {
+    automaticLayout: true,
+  });
+  window.addEventListener("hitResult", () => {
     // console.log(e)
-  })
-})
+  });
+});
 </script>
 
-<template> 
+<template>
   <div class="input-container row">
     <div ref="code" class="code col q-mr-md"></div>
-     <div class="col-auto">
-      <q-btn flat square color="primary" icon="play_arrow" class="q-mr-md" @click="runQuery" />
+    <div class="col-auto">
+      <q-btn
+        flat
+        square
+        color="primary"
+        icon="play_arrow"
+        class="q-mr-md"
+        @click="runQuery"
+      />
       <q-btn flat square color="red" icon="close" @click="clearQuery" />
-     </div>
+    </div>
   </div>
 </template>
 
