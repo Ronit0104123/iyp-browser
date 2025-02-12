@@ -4,6 +4,7 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
 import { Quasar } from 'quasar'
+import { IypApi } from '@/plugins/IypApi'
 
 import '@quasar/extras/roboto-font/roboto-font.css'
 import '@quasar/extras/material-icons/material-icons.css'
@@ -16,5 +17,6 @@ app.use(router)
 app.use(Quasar, {
     plugins: {}
 })
+app.use(IypApi)
 
 app.mount('#app')
