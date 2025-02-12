@@ -9,7 +9,7 @@ const graph = ref()
 let nvl = null
 
 const options = {
-	disableTelemetry: true,
+  disableTelemetry: true,
   layout: 'forceDirected',
   initialZoom: 1.5,
 	renderer: 'canvas'

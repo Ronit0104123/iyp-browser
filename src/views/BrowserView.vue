@@ -2,29 +2,33 @@
 import { ref } from 'vue'
 import InputPanel from '@/components/InputPanel.vue'
 import OutputPanel from '@/components/OutputPanel.vue'
+import { uid } from 'quasar'
 
-const initQuery = ref('')
 const queries = ref([])
 
-const runQuery = async (query) => {
-	queries.value.push(query)
+const runQuery = (query) => {
+  const uuid = uid()
+	queries.value.push({ query, uuid })
+}
+
+const clearQuery = (uuid) => {
+  queries.value = queries.value.filter((query) => query.uuid !== uuid)
 }
 </script>
 
 <template>
   <div padding>
     <div class="container">
-      <div class="input-container">
-        {{initQuery}}
+      <div class="browser-input-container">
         <InputPanel
           @run="runQuery"
         />
       </div>
-      <div class="output-container">
-        <div v-for="(query, index) in queries">
+      <div class="browser-output-container">
+        <div v-for="query in queries" :key="query.uuid">
           <OutputPanel
-            :key="index"
-            :query="query"
+            :query="query.query"
+            @clear="clearQuery(query.uuid)"
           />
         </div>
       </div>
@@ -41,13 +45,14 @@ const runQuery = async (query) => {
   padding: 16px;
   background-color: #f9f9f9;
 }
-.input-container {
+.browser-input-container {
   background-color: #ffffff;
   border: 1px solid #e0e0e0;
   border-radius: 4px;
 }
-.output-container {
+.browser-output-container {
   display: flex;
   flex-direction: column-reverse;
+  gap: 16px;
 }
 </style>

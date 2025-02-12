@@ -5,6 +5,8 @@ import Graph from '@/components/output/Graph.vue'
 
 const IypApi = inject('IypApi')
 
+const emits = defineEmits(['clear'])
+
 const props = defineProps(['query'])
 
 const tab = ref('graph')
@@ -29,6 +31,7 @@ onMounted(() => {
 			:query="props.query"
 			:serve-in-output="true"
 			@run="runCypher"
+			@clear="emits('clear')"
 		/>
 		<div class="output-container">
 			<q-splitter v-model="splitter" disable unit="px">
