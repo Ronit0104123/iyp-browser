@@ -1,6 +1,7 @@
 <script setup>
-import { ref, onMounted, inject } from 'vue'
+import { ref, onMounted, inject, onUnmounted } from 'vue'
 import { NVL } from '@neo4j-nvl/base'
+import { ZoomInteraction, PanInteraction, DragNodeInteraction } from '@neo4j-nvl/interaction-handlers'
 
 const iyp_api = inject('iyp_api')
 
@@ -10,39 +11,38 @@ let nvl = null
 const options = {
 	disableTelemetry: true,
   layout: 'forceDirected',
-  initialZoom: 0.5,
+  initialZoom: 1.5,
 	renderer: 'canvas'
-}
-const callbacks = {
-  onLayoutDone: () => {
-		console.log(nvl)
-	}
 }
 
 onMounted(async () => {
 	const { nodes, relationships } = await iyp_api.run('MATCH p = (:AS {asn:2497})--(:Name) RETURN p')
-	console.log(nodes)
-	console.log(relationships)
-	// const { nodes, relationships } = await executeQuery('MATCH p = (:AS {asn:2497})--(:Name) RETURN p')
-	// console.log(nodes, relationships)
-	nvl = new NVL(graph.value, nodes, relationships, options, callbacks)
-	// console.log(nvl)
+	nvl = new NVL(graph.value, nodes, relationships, options)
+	const zoom = new ZoomInteraction(nvl)
+	const pan = new PanInteraction(nvl)
+	const drag = new DragNodeInteraction(nvl)
+})
+
+onUnmounted(() => {
+	nvl.destroy()
 })
 </script>
 
 <template>
 	<div ref="graph-container row">
-		<div ref="graph" class="graph"></div>
+		<div class="graph">
+			<div ref="graph"></div>
+		</div>
 	</div>
 </template>
 
 <style scoped>
 .graph-container {
   width: 100%;
-  height: 500px;
+  height: 100%;
 }
 .graph {
   width: 100%;
-  height: 500px;
+  height: 460px;
 }
 </style>

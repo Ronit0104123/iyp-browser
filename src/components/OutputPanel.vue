@@ -21,9 +21,8 @@ const splitter = ref(110)
 					</q-tabs>
 				</template>
 				<template v-slot:after>
-					<q-tab-panels v-model="tab" vertical>
-						<q-tab-panel name="graph" style="height: 500px;">
-							<div class="text-h6">Graph</div>
+					<q-tab-panels v-model="tab" vertical class="output-panels">
+						<q-tab-panel name="graph">
 							<Graph />
 						</q-tab-panel>
 						<q-tab-panel name="table">
@@ -54,5 +53,8 @@ const splitter = ref(110)
 }
 .output-container {
 	width: 100%;
+}
+.output-panels {
+	height: 480px;
 }
 </style>
