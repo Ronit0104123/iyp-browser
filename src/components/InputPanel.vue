@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, defineEmits, watch } from 'vue'
+import { ref, onMounted } from 'vue'
 import * as monaco from 'monaco-editor'
 
 const code = ref()
