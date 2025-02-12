@@ -1,21 +1,39 @@
 <script setup>
+import { ref } from 'vue'
 import InputPanel from '@/components/InputPanel.vue'
 import OutputPanel from '@/components/OutputPanel.vue'
+
+const initQuery = ref('')
+const queries = ref([])
+
+const runQuery = async (query) => {
+	queries.value.push(query)
+}
 </script>
 
 <template>
   <div padding>
-    <div class="neo4j-container">
-      <div class="input-panel">
-        <InputPanel />
+    <div class="container">
+      <div class="input-container">
+        {{initQuery}}
+        <InputPanel
+          @run="runQuery"
+        />
       </div>
-      <OutputPanel />
+      <div class="output-container">
+        <div v-for="(query, index) in queries">
+          <OutputPanel
+            :key="index"
+            :query="query"
+          />
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-.neo4j-container {
+.container {
   display: flex;
   height: 100vh;
   flex-direction: column;
@@ -23,9 +41,13 @@ import OutputPanel from '@/components/OutputPanel.vue'
   padding: 16px;
   background-color: #f9f9f9;
 }
-.input-panel {
+.input-container {
   background-color: #ffffff;
   border: 1px solid #e0e0e0;
   border-radius: 4px;
+}
+.output-container {
+  display: flex;
+  flex-direction: column-reverse;
 }
 </style>

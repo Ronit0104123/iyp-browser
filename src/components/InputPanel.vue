@@ -1,18 +1,33 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, defineEmits, watch } from 'vue'
 import * as monaco from 'monaco-editor'
 
 const code = ref()
+let editor = null
+
+const emits = defineEmits(['run'])
+
+const props = defineProps(['query', 'serveInOutput'])
+
+const runQuery = () => {
+  emits('run', editor.getValue())
+  if (!props.serveInOutput) {
+    editor.setValue('')
+  }
+}
 
 onMounted(() => {
-  const editor = monaco.editor.create(code.value, {
-    value: 'MATCH p = (:AS {asn:2497})--(:Name) RETURN p',
+  editor = monaco.editor.create(code.value, {
+    value: props.query,
     language: 'cypher',
     theme: 'vs',
     minimap: {
       enabled: false
     },
     automaticLayout: true
+  })
+  window.addEventListener('hitResult', (e) => {
+    // console.log(e)
   })
 })
 </script>
@@ -21,7 +36,7 @@ onMounted(() => {
   <div class="input-container row">
     <div ref="code" class="code col q-mr-md"></div>
      <div class="col-auto">
-      <q-btn flat square color="primary" icon="play_arrow" class="q-mr-md" />
+      <q-btn flat square color="primary" icon="play_arrow" class="q-mr-md" @click="runQuery" />
       <q-btn flat square color="red" icon="close" />
      </div>
   </div>

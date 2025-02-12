@@ -1,9 +1,9 @@
 <script setup>
-import { ref, onMounted, inject, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { NVL } from '@neo4j-nvl/base'
 import { ZoomInteraction, PanInteraction, DragNodeInteraction } from '@neo4j-nvl/interaction-handlers'
 
-const iyp_api = inject('iyp_api')
+const props = defineProps(['nodes', 'relationships'])
 
 const graph = ref()
 let nvl = null
@@ -15,16 +15,31 @@ const options = {
 	renderer: 'canvas'
 }
 
+const init = (nodes, relationships) => {
+	if (nodes.length) {
+		nvl = new NVL(graph.value, nodes, relationships, options)
+		nvl.setDisableWebGL(true)
+		const zoom = new ZoomInteraction(nvl)
+		const pan = new PanInteraction(nvl)
+		const drag = new DragNodeInteraction(nvl)
+	}
+}
+
+watch(props, () => {
+	if (nvl) {
+		nvl.destroy()
+	}
+	init(props.nodes, props.relationships)
+})
+
 onMounted(async () => {
-	const { nodes, relationships } = await iyp_api.run('MATCH p = (:AS {asn:2497})--(:Name) RETURN p')
-	nvl = new NVL(graph.value, nodes, relationships, options)
-	const zoom = new ZoomInteraction(nvl)
-	const pan = new PanInteraction(nvl)
-	const drag = new DragNodeInteraction(nvl)
+	init(props.nodes, props.relationships)
 })
 
 onUnmounted(() => {
-	nvl.destroy()
+	if (nvl) {
+		nvl.destroy()
+	}
 })
 </script>
 

@@ -69,10 +69,10 @@ const IypApi = {
 			}
 		}
 
-    const iyp_api = {
+    const IypApi = {
       run
     }
-    app.provide('iyp_api', iyp_api)
+    app.provide('IypApi', IypApi)
   }
 }
 
