@@ -39,6 +39,11 @@ const runCypher = async (cypher) => {
   } else {
     errorText.value = res.error;
     tab.value = "error"
+    nodes.value = []
+    relationships.value = []
+    rows.value = []
+    columns.value = []
+    explanationText.value = []
   }
   loading.value = false;
 };
@@ -89,12 +94,11 @@ onMounted(() => {
             <q-tab
               name="graph"
               label="Graph"
-              icon="timeline"
               v-if="nodes.length"
             />
-            <q-tab name="table" label="Table" icon="table_chart" v-if="rows.length" />
-            <q-tab name="explanation" label="Explanation" icon="abc" v-if="textQuery !== ''" />
-            <q-tab name="error" label="Error" icon="error" v-if="errorText !== ''" />
+            <q-tab name="table" label="Table" v-if="rows.length" />
+            <q-tab name="explanation" label="Explanation" v-if="textQuery !== ''" />
+            <q-tab name="error" label="Error" v-if="errorText !== ''" />
           </q-tabs>
         </template>
         <template v-slot:after>
@@ -115,6 +119,22 @@ onMounted(() => {
         </template>
       </q-splitter>
     </div>
+    <div class="row footer">
+      <div class="col" style="text-align: left;">
+        <q-img src="@/assets/logo.svg" style="height: 20px; max-width: 20px" />
+        Internet Yellow Pages Browser
+      </div>
+      <!-- <div class="col" style="text-align: center;">
+        GitHub
+      </div> -->
+      <div class="col" style="text-align: right;">
+        This work is licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0" target="_blank">CC BY-NC-SA 4.0</a>
+        <q-img src="https://mirrors.creativecommons.org/presskit/icons/cc.svg" style="height: 15px; max-width: 15px" />
+        <q-img src="https://mirrors.creativecommons.org/presskit/icons/by.svg" style="height: 15px; max-width: 15px" />
+        <q-img src="https://mirrors.creativecommons.org/presskit/icons/nc.svg" style="height: 15px; max-width: 15px" />
+        <q-img src="https://mirrors.creativecommons.org/presskit/icons/sa.svg" style="height: 15px; max-width: 15px" />
+      </div>
+    </div>
   </div>
 </template>
 
@@ -122,7 +142,6 @@ onMounted(() => {
 .output-panel {
   background-color: #ffffff;
   border: 1px solid #e0e0e0;
-  padding: 4px;
   border-radius: 4px;
 }
 .output-container {
@@ -130,5 +149,16 @@ onMounted(() => {
 }
 .output-panels {
   height: 480px;
+}
+.footer {
+  width: 100%;
+  background-color: #263238;
+  color: #ffffff;
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
+  padding: 1px;
+}
+.footer, a {
+  color: #ffffff;
 }
 </style>
