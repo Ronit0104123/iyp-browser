@@ -17,15 +17,13 @@ const clearQuery = (uuid) => {
 </script>
 
 <template>
-  <div padding>
-    <div class="container">
-      <div class="browser-input-container">
-        <InputPanel active-tab="cypher" @run="runQuery" />
-      </div>
-      <div class="browser-output-container">
-        <div v-for="query in queries" :key="query.uuid">
-          <OutputPanel :query="query.query" :query-type="query.queryType" @clear="clearQuery(query.uuid)" />
-        </div>
+  <div class="container">
+    <div class="browser-input-container">
+      <InputPanel active-tab="cypher" @run="runQuery" />
+    </div>
+    <div class="browser-output-container">
+      <div v-for="query in queries" :key="query.uuid">
+        <OutputPanel :query="query.query" :query-type="query.queryType" @clear="clearQuery(query.uuid)" />
       </div>
     </div>
   </div>

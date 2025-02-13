@@ -58,6 +58,7 @@ const run = async (queryInput, queryInputType) => {
   tab.value = "graph"
   if (queryType.value === "cypher") {
     cypherQuery.value = queryInput
+    textQuery.value = "";
     runCypher(cypherQuery.value);
   } else {
     textQuery.value = queryInput

@@ -31,6 +31,9 @@ const runQuery = () => {
 const clearQuery = () => {
   if (!props.serveInOutput) {
     editor.setValue("");
+    cypher = "";
+    text = "";
+    tab.value = "cypher"
   } else {
     emits("clear");
   }
