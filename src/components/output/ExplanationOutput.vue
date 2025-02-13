@@ -1,6 +1,7 @@
 <script setup>
+const props = defineProps(["text"]);
 </script>
 
 <template>
-	Here will be the output of our LLM API.
+	<p>{{ props.text }}</p>
 </template>

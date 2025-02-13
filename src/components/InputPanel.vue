@@ -19,8 +19,6 @@ const runQuery = () => {
     if (props.serveInOutput) {
       if (tab.value === "cypher") {
         text = ""
-      } else {
-        cypher = ""
       }
     } else {
       editor.setValue("");

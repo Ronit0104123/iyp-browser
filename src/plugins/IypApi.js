@@ -22,6 +22,11 @@ const IypApi = {
           },
         ],
       });
+      if (response.data.errors.length) {
+        return {
+          error: response.data.errors[0].message,
+        };
+      }
       return {
         graph: nvlResultTransformer(response.data.results[0].data),
         table: tableResultTransformer(response.data.results[0].data, query),

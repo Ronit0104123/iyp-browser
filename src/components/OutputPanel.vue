@@ -23,16 +23,22 @@ const relationships = ref([]);
 const rows = ref([]);
 const columns = ref([]);
 const explanationText = ref("");
+const errorText = ref("");
 
 const runCypher = async (cypher) => {
   loading.value = true;
   const res = await IypApi.run(cypher);
-  nodes.value = res.graph.nodes;
-  relationships.value = res.graph.relationships;
-  rows.value = res.table.rows;
-  columns.value = res.table.columns;
-  if (!nodes.value.length) {
-    tab.value = "table";
+  if (res["error"] === undefined) {
+    nodes.value = res.graph.nodes;
+    relationships.value = res.graph.relationships;
+    rows.value = res.table.rows;
+    columns.value = res.table.columns;
+    if (!nodes.value.length) {
+      tab.value = "table";
+    }
+  } else {
+    errorText.value = res.error;
+    tab.value = "error"
   }
   loading.value = false;
 };
@@ -48,6 +54,8 @@ const runLlm = async (text) => {
 
 const run = async (queryInput, queryInputType) => {
   queryType.value = queryInputType
+  errorText.value = "";
+  tab.value = "graph"
   if (queryType.value === "cypher") {
     cypherQuery.value = queryInput
     runCypher(cypherQuery.value);
@@ -83,8 +91,9 @@ onMounted(() => {
               icon="timeline"
               v-if="nodes.length"
             />
-            <q-tab name="table" label="Table" icon="table_chart" />
-            <q-tab name="explanation" label="Explanation" icon="abc" />
+            <q-tab name="table" label="Table" icon="table_chart" v-if="rows.length" />
+            <q-tab name="explanation" label="Explanation" icon="abc" v-if="textQuery !== ''" />
+            <q-tab name="error" label="Error" icon="error" v-if="errorText !== ''" />
           </q-tabs>
         </template>
         <template v-slot:after>
@@ -92,11 +101,14 @@ onMounted(() => {
             <q-tab-panel name="graph" v-if="nodes.length">
               <GraphOutput :nodes="nodes" :relationships="relationships" />
             </q-tab-panel>
-            <q-tab-panel name="table">
+            <q-tab-panel name="table" v-if="rows.length">
               <TableOutput :rows="rows" :columns="columns" />
             </q-tab-panel>
-            <q-tab-panel name="explanation">
-              <ExplanationOutput />
+            <q-tab-panel name="explanation" v-if="textQuery !== ''" >
+              <ExplanationOutput :text="explanationText" />
+            </q-tab-panel>
+            <q-tab-panel name="error" v-if="errorText !== ''" >
+              <p>{{ errorText }}</p>
             </q-tab-panel>
           </q-tab-panels>
         </template>
