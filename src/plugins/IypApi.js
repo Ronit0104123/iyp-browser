@@ -22,7 +22,11 @@ const IypApi = {
           },
         ],
       });
-      return nvlResultTransformer(response.data.results[0].data);
+      return {
+        "graph": nvlResultTransformer(response.data.results[0].data),
+        "table": tableResultTransformer(response.data.results[0].data, query),
+        "code": codeResultTransformer(response.data.results[0].data),
+      };
     };
 
     const nvlResultTransformer = (results) => {
@@ -68,6 +72,48 @@ const IypApi = {
         caption: relationship.type,
       };
     };
+
+    const tableResultTransformer = (results, query) => {
+      const rows = [];
+      const columns = tableResultTransformerColumn(query);
+      if (columns.length) {
+        results.forEach((row, rowIndex) => {
+          if (row["row"] !== undefined) {
+            const returnedRow = {
+              index: rowIndex + 1,
+            }
+            row["row"].forEach((val, valIndex) => {
+              returnedRow[columns[valIndex + 1].name] = JSON.stringify(val)
+            })
+            rows.push(returnedRow)
+          }
+        })
+      }
+      return { rows, columns };
+    };
+
+    const tableResultTransformerColumn = (cypher) => {
+      const returnStatement = cypher.match(/return/i);
+      if (returnStatement.length) {
+        return [{
+          name: "index",
+          label: "#",
+          field: "index",
+          align: "left",
+        }].concat(cypher.split(returnStatement[0])[1].split(",").map(val => {
+          const getName = val.replace(/\s+/g, "")
+          return {
+            name: getName,
+            label: getName,
+            field: getName,
+            align: "left",
+          }
+        }));
+      }
+      return []
+    };
+
+    const codeResultTransformer = (results) => {};
 
     const IypApi = {
       run,
