@@ -85,7 +85,7 @@ onMounted(() => {
 
 <template>
   <div class="input-container row">
-    <q-tabs v-model="tab" class="col-auto q-mr-md" vertical dense>
+    <q-tabs v-model="tab" class="input-language-switcher" vertical dense>
       <q-tab name="cypher" label="Cypher" />
       <q-tab name="text" label="Text" />
     </q-tabs>
@@ -108,7 +108,12 @@ onMounted(() => {
 .input-container {
   width: 100%;
   height: 100px;
-  padding: 4px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  background-color: #F9FCFF;
+}
+.input-language-switcher {
+  width: 110px;
 }
 .code {
   width: 100%;

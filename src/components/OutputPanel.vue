@@ -88,7 +88,7 @@ onMounted(() => {
     />
     <q-skeleton v-if="loading" width="100%" height="480px" animation="wave" />
     <div v-else class="output-container">
-      <q-splitter v-model="splitter" disable unit="px">
+      <q-splitter v-model="splitter" disable unit="px" class="output-tabs">
         <template v-slot:before>
           <q-tabs v-model="tab" dense vertical>
             <q-tab
@@ -140,7 +140,7 @@ onMounted(() => {
 
 <style scoped>
 .output-panel {
-  background-color: #ffffff;
+  background-color: #F9FCFF;
   border: 1px solid #e0e0e0;
   border-radius: 4px;
 }
@@ -149,6 +149,10 @@ onMounted(() => {
 }
 .output-panels {
   height: 480px;
+  background-color: #F9FCFF;
+}
+.output-tabs {
+  background-color: #ffffff;
 }
 .footer {
   width: 100%;
