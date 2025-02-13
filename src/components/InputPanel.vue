@@ -4,18 +4,28 @@ import * as monaco from "monaco-editor";
 
 const emits = defineEmits(["run", "clear"]);
 
-const props = defineProps(["query", "serveInOutput"]);
+const props = defineProps(["cypher", "text", "activeTab", "serveInOutput"]);
 
 const code = ref();
-const tab = ref("cypher");
+const tab = ref("");
+let cypher = "";
+let text = "";
 let editor = null;
 
 const runQuery = () => {
   const getValue = editor.getValue();
   if (getValue !== "") {
-    emits("run", getValue);
-    if (!props.serveInOutput) {
+    emits("run", getValue, tab.value);
+    if (props.serveInOutput) {
+      if (tab.value === "cypher") {
+        text = ""
+      } else {
+        cypher = ""
+      }
+    } else {
       editor.setValue("");
+      cypher = "";
+      text = "";
     }
   }
 };
@@ -28,13 +38,37 @@ const clearQuery = () => {
   }
 };
 
-watch(tab, () => {
+watch(tab, (newTab, oldTab) => {
+  if (newTab === "text" && oldTab === "cypher") {
+    cypher = editor.getValue();
+    editor.setValue(text);
+  } else if (newTab === "cypher" && oldTab === "text") {
+    text = editor.getValue();
+    editor.setValue(cypher);
+  }
   monaco.editor.setModelLanguage(editor.getModel(), tab.value);
 })
 
+watch(() => props.cypher, () => {
+  cypher = props.cypher;
+  if (props.activeTab === "cypher") {
+    tab.value = "cypher";
+    editor.setValue(cypher);
+  }
+})
+
+watch(() => props.text, () => {
+  text = props.text;
+  if (props.activeTab === "text") {
+    tab.value = "text";
+    editor.setValue(text);
+  }
+})
+
 onMounted(() => {
+  tab.value = "cypher"
   editor = monaco.editor.create(code.value, {
-    value: props.query,
+    value: "",
     language: "cypher",
     theme: "vs",
     minimap: {

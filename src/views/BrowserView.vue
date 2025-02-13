@@ -6,9 +6,9 @@ import { uid } from "quasar";
 
 const queries = ref([]);
 
-const runQuery = (query) => {
+const runQuery = (query, queryType) => {
   const uuid = uid();
-  queries.value.push({ query, uuid });
+  queries.value.push({ query, queryType, uuid });
 };
 
 const clearQuery = (uuid) => {
@@ -20,11 +20,11 @@ const clearQuery = (uuid) => {
   <div padding>
     <div class="container">
       <div class="browser-input-container">
-        <InputPanel @run="runQuery" />
+        <InputPanel active-tab="cypher" @run="runQuery" />
       </div>
       <div class="browser-output-container">
         <div v-for="query in queries" :key="query.uuid">
-          <OutputPanel :query="query.query" @clear="clearQuery(query.uuid)" />
+          <OutputPanel :query="query.query" :query-type="query.queryType" @clear="clearQuery(query.uuid)" />
         </div>
       </div>
     </div>

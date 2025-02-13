@@ -6,11 +6,15 @@ import TableOutput from "@/components/output/TableOutput.vue";
 import ExplanationOutput from "@/components/output/ExplanationOutput.vue";
 
 const IypApi = inject("IypApi");
+const LlmApi = inject("LlmApi");
 
 const emits = defineEmits(["clear"]);
 
-const props = defineProps(["query"]);
+const props = defineProps(["query", "queryType"]);
 
+const cypherQuery = ref("");
+const textQuery = ref("");
+const queryType = ref("");
 const tab = ref("graph");
 const splitter = ref(110);
 const loading = ref(false);
@@ -18,6 +22,7 @@ const nodes = ref([]);
 const relationships = ref([]);
 const rows = ref([]);
 const columns = ref([]);
+const explanationText = ref("");
 
 const runCypher = async (cypher) => {
   loading.value = true;
@@ -32,17 +37,39 @@ const runCypher = async (cypher) => {
   loading.value = false;
 };
 
+const runLlm = async (text) => {
+  loading.value = true;
+  const res = await LlmApi.run(text);
+  cypherQuery.value = res.cypher;
+  explanationText.value = res.explanation;
+  runCypher(cypherQuery.value)
+  loading.value = false;
+};
+
+const run = async (queryInput, queryInputType) => {
+  queryType.value = queryInputType
+  if (queryType.value === "cypher") {
+    cypherQuery.value = queryInput
+    runCypher(cypherQuery.value);
+  } else {
+    textQuery.value = queryInput
+    runLlm(textQuery.value);
+  }
+};
+
 onMounted(() => {
-  runCypher(props.query);
+  run(props.query, props.queryType)
 });
 </script>
 
 <template>
   <div class="output-panel row">
     <InputPanel
-      :query="props.query"
+      :cypher="cypherQuery"
+      :text="textQuery"
+      :active-tab="queryType"
       :serve-in-output="true"
-      @run="runCypher"
+      @run="run"
       @clear="emits('clear')"
     />
     <q-skeleton v-if="loading" width="100%" height="480px" animation="wave" />
