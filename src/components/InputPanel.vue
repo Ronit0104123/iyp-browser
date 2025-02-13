@@ -1,13 +1,14 @@
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import * as monaco from "monaco-editor";
-
-const code = ref();
-let editor = null;
 
 const emits = defineEmits(["run", "clear"]);
 
 const props = defineProps(["query", "serveInOutput"]);
+
+const code = ref();
+const tab = ref("cypher");
+let editor = null;
 
 const runQuery = () => {
   const getValue = editor.getValue();
@@ -27,6 +28,10 @@ const clearQuery = () => {
   }
 };
 
+watch(tab, () => {
+  monaco.editor.setModelLanguage(editor.getModel(), tab.value);
+})
+
 onMounted(() => {
   editor = monaco.editor.create(code.value, {
     value: props.query,
@@ -45,6 +50,10 @@ onMounted(() => {
 
 <template>
   <div class="input-container row">
+    <q-tabs v-model="tab" class="col-auto q-mr-md" vertical dense>
+      <q-tab name="cypher" label="Cypher" />
+      <q-tab name="text" label="Text" />
+    </q-tabs>
     <div ref="code" class="code col q-mr-md"></div>
     <div class="col-auto">
       <q-btn

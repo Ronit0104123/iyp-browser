@@ -3,6 +3,7 @@ import { ref, inject, onMounted } from "vue";
 import InputPanel from "@/components/InputPanel.vue";
 import GraphOutput from "@/components/output/GraphOutput.vue";
 import TableOutput from "@/components/output/TableOutput.vue";
+import ExplanationOutput from "@/components/output/ExplanationOutput.vue";
 
 const IypApi = inject("IypApi");
 
@@ -68,8 +69,7 @@ onMounted(() => {
               <TableOutput :rows="rows" :columns="columns" />
             </q-tab-panel>
             <q-tab-panel name="explanation">
-              <div class="text-h6">Explanation</div>
-              Lorem ipsum dolor sit amet consectetur adipisicing elit.
+              <ExplanationOutput />
             </q-tab-panel>
           </q-tab-panels>
         </template>
