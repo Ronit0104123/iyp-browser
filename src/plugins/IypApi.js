@@ -23,9 +23,8 @@ const IypApi = {
         ],
       });
       return {
-        "graph": nvlResultTransformer(response.data.results[0].data),
-        "table": tableResultTransformer(response.data.results[0].data, query),
-        "code": codeResultTransformer(response.data.results[0].data),
+        graph: nvlResultTransformer(response.data.results[0].data),
+        table: tableResultTransformer(response.data.results[0].data, query),
       };
     };
 
@@ -81,13 +80,13 @@ const IypApi = {
           if (row["row"] !== undefined) {
             const returnedRow = {
               index: rowIndex + 1,
-            }
+            };
             row["row"].forEach((val, valIndex) => {
-              returnedRow[columns[valIndex + 1].name] = JSON.stringify(val)
-            })
-            rows.push(returnedRow)
+              returnedRow[columns[valIndex + 1].name] = JSON.stringify(val);
+            });
+            rows.push(returnedRow);
           }
-        })
+        });
       }
       return { rows, columns };
     };
@@ -95,25 +94,30 @@ const IypApi = {
     const tableResultTransformerColumn = (cypher) => {
       const returnStatement = cypher.match(/return/i);
       if (returnStatement.length) {
-        return [{
-          name: "index",
-          label: "#",
-          field: "index",
-          align: "left",
-        }].concat(cypher.split(returnStatement[0])[1].split(",").map(val => {
-          const getName = val.replace(/\s+/g, "")
-          return {
-            name: getName,
-            label: getName,
-            field: getName,
+        return [
+          {
+            name: "index",
+            label: "#",
+            field: "index",
             align: "left",
-          }
-        }));
+          },
+        ].concat(
+          cypher
+            .split(returnStatement[0])[1]
+            .split(",")
+            .map((val) => {
+              const getName = val.replace(/\s+/g, "");
+              return {
+                name: getName,
+                label: getName,
+                field: getName,
+                align: "left",
+              };
+            }),
+        );
       }
-      return []
+      return [];
     };
-
-    const codeResultTransformer = (results) => {};
 
     const IypApi = {
       run,

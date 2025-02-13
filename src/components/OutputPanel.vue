@@ -12,12 +12,14 @@ const props = defineProps(["query"]);
 
 const tab = ref("graph");
 const splitter = ref(110);
+const loading = ref(false);
 const nodes = ref([]);
 const relationships = ref([]);
 const rows = ref([]);
 const columns = ref([]);
 
 const runCypher = async (cypher) => {
+  loading.value = true;
   const res = await IypApi.run(cypher);
   nodes.value = res.graph.nodes;
   relationships.value = res.graph.relationships;
@@ -26,6 +28,7 @@ const runCypher = async (cypher) => {
   if (!nodes.value.length) {
     tab.value = "table";
   }
+  loading.value = false;
 };
 
 onMounted(() => {
@@ -41,14 +44,19 @@ onMounted(() => {
       @run="runCypher"
       @clear="emits('clear')"
     />
-    <div class="output-container">
+    <q-skeleton v-if="loading" width="100%" height="480px" animation="wave" />
+    <div v-else class="output-container">
       <q-splitter v-model="splitter" disable unit="px">
         <template v-slot:before>
           <q-tabs v-model="tab" dense vertical>
-            <q-tab name="graph" label="Graph" icon="timeline" v-if="nodes.length" />
+            <q-tab
+              name="graph"
+              label="Graph"
+              icon="timeline"
+              v-if="nodes.length"
+            />
             <q-tab name="table" label="Table" icon="table_chart" />
             <q-tab name="explanation" label="Explanation" icon="abc" />
-            <q-tab name="code" label="Code" icon="code" />
           </q-tabs>
         </template>
         <template v-slot:after>
@@ -61,10 +69,6 @@ onMounted(() => {
             </q-tab-panel>
             <q-tab-panel name="explanation">
               <div class="text-h6">Explanation</div>
-              Lorem ipsum dolor sit amet consectetur adipisicing elit.
-            </q-tab-panel>
-            <q-tab-panel name="code">
-              <div class="text-h6">Code</div>
               Lorem ipsum dolor sit amet consectetur adipisicing elit.
             </q-tab-panel>
           </q-tab-panels>
