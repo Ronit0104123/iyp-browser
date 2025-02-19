@@ -136,7 +136,14 @@ onMounted(() => {
         class="q-mr-md"
         @click="runQuery"
       />
-      <q-btn flat square color="red" icon="close" @click="clearQuery" />
+      <q-btn
+        flat
+        square
+        color="red"
+        icon="close"
+        class="q-mr-md"
+        @click="clearQuery"
+      />
     </div>
   </div>
 </template>

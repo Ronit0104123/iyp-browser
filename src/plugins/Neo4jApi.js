@@ -29,7 +29,10 @@ const Neo4jApi = {
       }
       return {
         graph: nvlResultTransformer(response.data.results[0].data),
-        table: tableResultTransformer(response.data.results[0].columns, response.data.results[0].data),
+        table: tableResultTransformer(
+          response.data.results[0].columns,
+          response.data.results[0].data,
+        ),
       };
     };
 
