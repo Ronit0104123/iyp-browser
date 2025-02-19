@@ -5,7 +5,7 @@ import GraphOutput from "@/components/output/GraphOutput.vue";
 import TableOutput from "@/components/output/TableOutput.vue";
 import ExplanationOutput from "@/components/output/ExplanationOutput.vue";
 
-const IypApi = inject("IypApi");
+const Neo4jApi = inject("Neo4jApi");
 const LlmApi = inject("LlmApi");
 
 const emits = defineEmits(["clear"]);
@@ -27,7 +27,7 @@ const errorText = ref("");
 
 const runCypher = async (cypher) => {
   loading.value = true;
-  const res = await IypApi.run(cypher);
+  const res = await Neo4jApi.run(cypher);
   if (res["error"] === undefined) {
     nodes.value = res.graph.nodes;
     relationships.value = res.graph.relationships;

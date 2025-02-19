@@ -1,15 +1,15 @@
 import axios from "axios";
 import randomColor from "randomcolor";
 
-/// Base url for api
-const IYP_API_BASE = "https://iyp.iijlab.net/iyp/db/neo4j/tx/";
+/// Base url for neo4j api
+const NEO4J_API_BASE = "https://iyp.iijlab.net/iyp/db/neo4j/tx/";
 /// Default timeout before api call are considered failed
 const DEFAULT_TIMEOUT = 180000;
 
-const IypApi = {
+const Neo4jApi = {
   install: (app) => {
     const axios_base = axios.create({
-      baseURL: IYP_API_BASE,
+      baseURL: NEO4J_API_BASE,
       timeout: DEFAULT_TIMEOUT,
     });
 
@@ -29,7 +29,7 @@ const IypApi = {
       }
       return {
         graph: nvlResultTransformer(response.data.results[0].data),
-        table: tableResultTransformer(response.data.results[0].data, query),
+        table: tableResultTransformer(response.data.results[0].columns, response.data.results[0].data),
       };
     };
 
@@ -77,9 +77,9 @@ const IypApi = {
       };
     };
 
-    const tableResultTransformer = (results, query) => {
+    const tableResultTransformer = (header, results) => {
       const rows = [];
-      const columns = tableResultTransformerColumn(query);
+      const columns = tableResultTransformerColumn(header);
       if (columns.length) {
         results.forEach((row, rowIndex) => {
           if (row["row"] !== undefined) {
@@ -96,9 +96,8 @@ const IypApi = {
       return { rows, columns };
     };
 
-    const tableResultTransformerColumn = (cypher) => {
-      const returnStatement = cypher.match(/return/i);
-      if (returnStatement.length) {
+    const tableResultTransformerColumn = (columns) => {
+      if (columns.length) {
         return [
           {
             name: "index",
@@ -107,28 +106,24 @@ const IypApi = {
             align: "left",
           },
         ].concat(
-          cypher
-            .split(returnStatement[0])[1]
-            .split(",")
-            .map((val) => {
-              const getName = val.replace(/\s+/g, "");
-              return {
-                name: getName,
-                label: getName,
-                field: getName,
-                align: "left",
-              };
-            }),
+          columns.map((val) => {
+            return {
+              name: val,
+              label: val,
+              field: val,
+              align: "left",
+            };
+          }),
         );
       }
       return [];
     };
 
-    const IypApi = {
+    const Neo4jApi = {
       run,
     };
-    app.provide("IypApi", IypApi);
+    app.provide("Neo4jApi", Neo4jApi);
   },
 };
 
-export { IypApi };
+export { Neo4jApi };
