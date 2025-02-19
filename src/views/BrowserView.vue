@@ -23,7 +23,11 @@ const clearQuery = (uuid) => {
     </div>
     <div class="browser-output-container">
       <div v-for="query in queries" :key="query.uuid">
-        <OutputPanel :query="query.query" :query-type="query.queryType" @clear="clearQuery(query.uuid)" />
+        <OutputPanel
+          :query="query.query"
+          :query-type-input="query.queryType"
+          @clear="clearQuery(query.uuid)"
+        />
       </div>
     </div>
   </div>

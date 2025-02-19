@@ -3,5 +3,5 @@ const props = defineProps(["text"]);
 </script>
 
 <template>
-	<p>{{ props.text }}</p>
+  <p>{{ props.text }}</p>
 </template>

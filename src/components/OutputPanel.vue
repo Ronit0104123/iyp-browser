@@ -10,7 +10,7 @@ const LlmApi = inject("LlmApi");
 
 const emits = defineEmits(["clear"]);
 
-const props = defineProps(["query", "queryType"]);
+const props = defineProps(["query", "queryTypeInput"]);
 
 const cypherQuery = ref("");
 const textQuery = ref("");
@@ -38,12 +38,12 @@ const runCypher = async (cypher) => {
     }
   } else {
     errorText.value = res.error;
-    tab.value = "error"
-    nodes.value = []
-    relationships.value = []
-    rows.value = []
-    columns.value = []
-    explanationText.value = []
+    tab.value = "error";
+    nodes.value = [];
+    relationships.value = [];
+    rows.value = [];
+    columns.value = [];
+    explanationText.value = [];
   }
   loading.value = false;
 };
@@ -53,34 +53,34 @@ const runLlm = async (text) => {
   const res = await LlmApi.run(text);
   cypherQuery.value = res.cypher;
   explanationText.value = res.explanation;
-  runCypher(cypherQuery.value)
+  runCypher(cypherQuery.value);
   loading.value = false;
 };
 
 const run = async (queryInput, queryInputType) => {
-  queryType.value = queryInputType
+  queryType.value = queryInputType;
   errorText.value = "";
-  tab.value = "graph"
+  tab.value = "graph";
   if (queryType.value === "cypher") {
-    cypherQuery.value = queryInput
+    cypherQuery.value = queryInput;
     textQuery.value = "";
     runCypher(cypherQuery.value);
   } else {
-    textQuery.value = queryInput
+    textQuery.value = queryInput;
     runLlm(textQuery.value);
   }
 };
 
 onMounted(() => {
-  run(props.query, props.queryType)
+  run(props.query, props.queryTypeInput);
 });
 </script>
 
 <template>
   <div class="output-panel row">
     <InputPanel
-      :cypher="cypherQuery"
-      :text="textQuery"
+      :cypher-input="cypherQuery"
+      :text-input="textQuery"
       :active-tab="queryType"
       :serve-in-output="true"
       @run="run"
@@ -91,13 +91,13 @@ onMounted(() => {
       <q-splitter v-model="splitter" disable unit="px" class="output-tabs">
         <template v-slot:before>
           <q-tabs v-model="tab" dense vertical>
-            <q-tab
-              name="graph"
-              label="Graph"
-              v-if="nodes.length"
-            />
+            <q-tab name="graph" label="Graph" v-if="nodes.length" />
             <q-tab name="table" label="Table" v-if="rows.length" />
-            <q-tab name="explanation" label="Explanation" v-if="textQuery !== ''" />
+            <q-tab
+              name="explanation"
+              label="Explanation"
+              v-if="textQuery !== ''"
+            />
             <q-tab name="error" label="Error" v-if="errorText !== ''" />
           </q-tabs>
         </template>
@@ -109,10 +109,10 @@ onMounted(() => {
             <q-tab-panel name="table" v-if="rows.length">
               <TableOutput :rows="rows" :columns="columns" />
             </q-tab-panel>
-            <q-tab-panel name="explanation" v-if="textQuery !== ''" >
+            <q-tab-panel name="explanation" v-if="textQuery !== ''">
               <ExplanationOutput :text="explanationText" />
             </q-tab-panel>
-            <q-tab-panel name="error" v-if="errorText !== ''" >
+            <q-tab-panel name="error" v-if="errorText !== ''">
               <p>{{ errorText }}</p>
             </q-tab-panel>
           </q-tab-panels>
@@ -120,19 +120,36 @@ onMounted(() => {
       </q-splitter>
     </div>
     <div class="row footer">
-      <div class="col" style="text-align: left;">
+      <div class="col" style="text-align: left">
         <q-img src="@/assets/logo.svg" style="height: 20px; max-width: 20px" />
         Internet Yellow Pages Browser
       </div>
       <!-- <div class="col" style="text-align: center;">
         GitHub
       </div> -->
-      <div class="col" style="text-align: right;">
-        This work is licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0" target="_blank">CC BY-NC-SA 4.0</a>
-        <q-img src="https://mirrors.creativecommons.org/presskit/icons/cc.svg" style="height: 15px; max-width: 15px" />
-        <q-img src="https://mirrors.creativecommons.org/presskit/icons/by.svg" style="height: 15px; max-width: 15px" />
-        <q-img src="https://mirrors.creativecommons.org/presskit/icons/nc.svg" style="height: 15px; max-width: 15px" />
-        <q-img src="https://mirrors.creativecommons.org/presskit/icons/sa.svg" style="height: 15px; max-width: 15px" />
+      <div class="col" style="text-align: right">
+        This work is licensed under
+        <a
+          href="https://creativecommons.org/licenses/by-nc-sa/4.0"
+          target="_blank"
+          >CC BY-NC-SA 4.0</a
+        >
+        <q-img
+          src="https://mirrors.creativecommons.org/presskit/icons/cc.svg"
+          style="height: 15px; max-width: 15px"
+        />
+        <q-img
+          src="https://mirrors.creativecommons.org/presskit/icons/by.svg"
+          style="height: 15px; max-width: 15px"
+        />
+        <q-img
+          src="https://mirrors.creativecommons.org/presskit/icons/nc.svg"
+          style="height: 15px; max-width: 15px"
+        />
+        <q-img
+          src="https://mirrors.creativecommons.org/presskit/icons/sa.svg"
+          style="height: 15px; max-width: 15px"
+        />
       </div>
     </div>
   </div>
@@ -140,7 +157,7 @@ onMounted(() => {
 
 <style scoped>
 .output-panel {
-  background-color: #F9FCFF;
+  background-color: #f9fcff;
   border: 1px solid #e0e0e0;
   border-radius: 4px;
 }
@@ -149,7 +166,7 @@ onMounted(() => {
 }
 .output-panels {
   height: 480px;
-  background-color: #F9FCFF;
+  background-color: #f9fcff;
 }
 .output-tabs {
   background-color: #ffffff;
@@ -162,7 +179,8 @@ onMounted(() => {
   border-bottom-right-radius: 4px;
   padding: 1px;
 }
-.footer, a {
+.footer,
+a {
   color: #ffffff;
 }
 </style>

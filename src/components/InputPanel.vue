@@ -1,10 +1,17 @@
 <script setup>
 import { ref, onMounted, watch } from "vue";
 import * as monaco from "monaco-editor";
+import schema from "@/assets/neo4j-schema.json";
+import { autocomplete } from "@neo4j-cypher/language-support";
 
 const emits = defineEmits(["run", "clear"]);
 
-const props = defineProps(["cypher", "text", "activeTab", "serveInOutput"]);
+const props = defineProps([
+  "cypherInput",
+  "textInput",
+  "activeTab",
+  "serveInOutput",
+]);
 
 const code = ref();
 const tab = ref("");
@@ -18,7 +25,7 @@ const runQuery = () => {
     emits("run", getValue, tab.value);
     if (props.serveInOutput) {
       if (tab.value === "cypher") {
-        text = ""
+        text = "";
       }
     } else {
       editor.setValue("");
@@ -33,7 +40,7 @@ const clearQuery = () => {
     editor.setValue("");
     cypher = "";
     text = "";
-    tab.value = "cypher"
+    tab.value = "cypher";
   } else {
     emits("clear");
   }
@@ -48,26 +55,32 @@ watch(tab, (newTab, oldTab) => {
     editor.setValue(cypher);
   }
   monaco.editor.setModelLanguage(editor.getModel(), tab.value);
-})
+});
 
-watch(() => props.cypher, () => {
-  cypher = props.cypher;
-  if (props.activeTab === "cypher") {
-    tab.value = "cypher";
-    editor.setValue(cypher);
-  }
-})
+watch(
+  () => props.cypherInput,
+  () => {
+    cypher = props.cypherInput;
+    if (props.activeTab === "cypher") {
+      tab.value = "cypher";
+      editor.setValue(cypher);
+    }
+  },
+);
 
-watch(() => props.text, () => {
-  text = props.text;
-  if (props.activeTab === "text") {
-    tab.value = "text";
-    editor.setValue(text);
-  }
-})
+watch(
+  () => props.textInput,
+  () => {
+    text = props.textInput;
+    if (props.activeTab === "text") {
+      tab.value = "text";
+      editor.setValue(text);
+    }
+  },
+);
 
 onMounted(() => {
-  tab.value = "cypher"
+  tab.value = "cypher";
   editor = monaco.editor.create(code.value, {
     value: "",
     language: "cypher",
@@ -79,6 +92,30 @@ onMounted(() => {
   });
   window.addEventListener("hitResult", () => {
     // console.log(e)
+  });
+  monaco.languages.register({
+    id: "cypher",
+    extensions: [".cypher"],
+    aliases: ["Cypher", "cypher"],
+  });
+  monaco.languages.registerCompletionItemProvider("cypher", {
+    provideCompletionItems: (model, position) => {
+      const textUtilPosition = model.getValueInRange({
+        startLineNumber: 1,
+        startColumn: 1,
+        endLineNumber: position.lineNumber,
+        endColumn: position.column,
+      });
+      const completionItems = autocomplete(textUtilPosition, schema);
+      return {
+        suggestions: completionItems.map((item) => ({
+          label: item.label,
+          kind: item.kind,
+          insertText: item.label,
+          range: item.range,
+        })),
+      };
+    },
   });
 });
 </script>
@@ -110,7 +147,7 @@ onMounted(() => {
   height: 100px;
   padding-top: 4px;
   padding-bottom: 4px;
-  background-color: #F9FCFF;
+  background-color: #f9fcff;
 }
 .input-language-switcher {
   width: 110px;
