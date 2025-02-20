@@ -3,6 +3,7 @@ import { ref, onMounted, watch } from "vue";
 import * as monaco from "monaco-editor";
 import schema from "@/assets/neo4j-schema.json";
 import { autocomplete } from "@neo4j-cypher/language-support";
+import Feedback from "./Feedback.vue";
 
 const emits = defineEmits(["run", "clear"]);
 
@@ -89,6 +90,7 @@ onMounted(() => {
       enabled: false,
     },
     automaticLayout: true,
+    contextmenu: false,
   });
   window.addEventListener("hitResult", () => {
     // console.log(e)
@@ -117,6 +119,14 @@ onMounted(() => {
       };
     },
   });
+  editor.addAction({
+    id: "run",
+    label: "Run",
+    keybindings: [monaco.KeyMod.Shift | monaco.KeyCode.Enter],
+    run: () => {
+      runQuery();
+    }
+  });
 });
 </script>
 
@@ -124,26 +134,32 @@ onMounted(() => {
   <div class="input-container row">
     <q-tabs v-model="tab" class="input-language-switcher" vertical dense>
       <q-tab name="cypher" label="Cypher" />
-      <q-tab name="text" label="Text" />
+      <q-tab name="text" label="Text" disable>
+        <q-badge>Coming Soon</q-badge>
+      </q-tab>
     </q-tabs>
     <div ref="code" class="code col q-mr-md"></div>
-    <div class="col-auto">
-      <q-btn
-        flat
-        square
-        color="primary"
-        icon="play_arrow"
-        class="q-mr-md"
-        @click="runQuery"
-      />
-      <q-btn
-        flat
-        square
-        color="red"
-        icon="close"
-        class="q-mr-md"
-        @click="clearQuery"
-      />
+    <div class="col-auto q-mr-md">
+      <div class="row q-mb-sm">
+        <q-btn
+          flat
+          square
+          color="primary"
+          icon="play_arrow"
+          class="q-mr-md"
+          @click="runQuery"
+        />
+        <q-btn
+          flat
+          square
+          color="red"
+          icon="close"
+          @click="clearQuery"
+        />
+      </div>
+      <div class="row justify-center" style="width: 100%;">
+        <Feedback />
+      </div>
     </div>
   </div>
 </template>

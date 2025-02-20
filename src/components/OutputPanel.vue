@@ -4,6 +4,7 @@ import InputPanel from "@/components/InputPanel.vue";
 import GraphOutput from "@/components/output/GraphOutput.vue";
 import TableOutput from "@/components/output/TableOutput.vue";
 import ExplanationOutput from "@/components/output/ExplanationOutput.vue";
+import { version } from "../../package.json";
 
 const Neo4jApi = inject("Neo4jApi");
 const LlmApi = inject("LlmApi");
@@ -123,6 +124,9 @@ onMounted(() => {
       <div class="col" style="text-align: left">
         <q-img src="@/assets/logo.svg" style="height: 20px; max-width: 20px" />
         Internet Yellow Pages Browser
+        <a :href="`https://github.com/InternetHealthReport/iyp-browser/releases/tag/v${version}`" target="_blank">
+          <q-badge color="red">v{{ version }}</q-badge>
+        </a>
       </div>
       <!-- <div class="col" style="text-align: center;">
         GitHub
