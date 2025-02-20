@@ -55,6 +55,7 @@
     "WEBSITE"
   ],
   "propertyKeys": [
+    "asn",
     "name",
     "country_code",
     "alpha3",
