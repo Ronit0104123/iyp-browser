@@ -27,7 +27,6 @@ const columns = ref([]);
 const explanationText = ref("");
 const errorText = ref("");
 const outputPanel = ref();
-const outputPanels = ref();
 
 const runCypher = async (cypher) => {
   loading.value = true;
@@ -82,7 +81,6 @@ onMounted(() => {
     listeners: {
       move: (event) => {
         outputPanel.value.style.height = `${event.rect.height}px`;
-        outputPanels.value.$el.style.height = `calc(${event.rect.height}px - 101px - 25px)`; // output-panel.height - InputPanel.height - footer.height
       },
     },
     modifiers: [
@@ -120,12 +118,7 @@ onMounted(() => {
           </q-tabs>
         </template>
         <template v-slot:after>
-          <q-tab-panels
-            v-model="tab"
-            vertical
-            class="output-panels"
-            ref="outputPanels"
-          >
+          <q-tab-panels v-model="tab" vertical class="output-panels">
             <q-tab-panel
               name="graph"
               v-if="nodes.length"
@@ -223,12 +216,11 @@ onMounted(() => {
 }
 .output-panels {
   background-color: #f9fcff;
-  height: calc(
-    540px - 101px - 25px
-  ); /* output-panel.height - InputPanel.height - footer.height */
+  height: 100%;
 }
 .output-tabs {
   background-color: #ffffff;
+  height: 100%;
 }
 .footer {
   width: 100%;
@@ -244,6 +236,6 @@ a {
   color: #ffffff;
 }
 .output-tab-panel {
-  padding: 0;
+  padding: 0px;
 }
 </style>
