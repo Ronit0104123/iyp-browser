@@ -52,9 +52,7 @@ onUnmounted(() => {
     <div class="graph">
       <div ref="graph"></div>
       <q-card class="overview">
-        <q-card-section>
-          Test
-        </q-card-section>
+        <q-card-section> Test </q-card-section>
       </q-card>
     </div>
   </div>

@@ -5,6 +5,7 @@ import GraphOutput from "@/components/output/GraphOutput.vue";
 import TableOutput from "@/components/output/TableOutput.vue";
 import ExplanationOutput from "@/components/output/ExplanationOutput.vue";
 import { version } from "../../package.json";
+import interact from "@interactjs/interactjs";
 
 const Neo4jApi = inject("Neo4jApi");
 const LlmApi = inject("LlmApi");
@@ -25,6 +26,8 @@ const rows = ref([]);
 const columns = ref([]);
 const explanationText = ref("");
 const errorText = ref("");
+const outputPanel = ref();
+const outputPanels = ref();
 
 const runCypher = async (cypher) => {
   loading.value = true;
@@ -74,11 +77,25 @@ const run = async (queryInput, queryInputType) => {
 
 onMounted(() => {
   run(props.query, props.queryTypeInput);
+  interact(outputPanel.value).resizable({
+    edges: { top: false, left: false, bottom: true, right: false },
+    listeners: {
+      move: (event) => {
+        outputPanel.value.style.height = `${event.rect.height}px`;
+        outputPanels.value.$el.style.height = `calc(${event.rect.height}px - 101px - 25px)`; // output-panel.height - InputPanel.height - footer.height
+      },
+    },
+    modifiers: [
+      interact.modifiers.restrictSize({
+        min: { height: 540 },
+      }),
+    ],
+  });
 });
 </script>
 
 <template>
-  <div class="output-panel">
+  <div class="output-panel" ref="outputPanel">
     <InputPanel
       :cypher-input="cypherQuery"
       :text-input="textQuery"
@@ -103,17 +120,38 @@ onMounted(() => {
           </q-tabs>
         </template>
         <template v-slot:after>
-          <q-tab-panels v-model="tab" vertical class="output-panels">
-            <q-tab-panel name="graph" v-if="nodes.length" class="output-tab-panel">
+          <q-tab-panels
+            v-model="tab"
+            vertical
+            class="output-panels"
+            ref="outputPanels"
+          >
+            <q-tab-panel
+              name="graph"
+              v-if="nodes.length"
+              class="output-tab-panel"
+            >
               <GraphOutput :nodes="nodes" :relationships="relationships" />
             </q-tab-panel>
-            <q-tab-panel name="table" v-if="rows.length" class="output-tab-panel">
+            <q-tab-panel
+              name="table"
+              v-if="rows.length"
+              class="output-tab-panel"
+            >
               <TableOutput :rows="rows" :columns="columns" />
             </q-tab-panel>
-            <q-tab-panel name="explanation" v-if="textQuery !== ''" class="output-tab-panel">
+            <q-tab-panel
+              name="explanation"
+              v-if="textQuery !== ''"
+              class="output-tab-panel"
+            >
               <ExplanationOutput :text="explanationText" />
             </q-tab-panel>
-            <q-tab-panel name="error" v-if="errorText !== ''" class="output-tab-panel">
+            <q-tab-panel
+              name="error"
+              v-if="errorText !== ''"
+              class="output-tab-panel"
+            >
               <p>{{ errorText }}</p>
             </q-tab-panel>
           </q-tab-panels>
@@ -123,7 +161,10 @@ onMounted(() => {
     <div class="footer">
       <div class="row">
         <div class="col" style="text-align: left">
-          <q-img src="@/assets/logo.svg" style="height: 20px; max-width: 20px" />
+          <q-img
+            src="@/assets/logo.svg"
+            style="height: 20px; max-width: 20px"
+          />
           Internet Yellow Pages Browser
           <a
             :href="`https://github.com/InternetHealthReport/iyp-browser/releases/tag/v${version}`"
@@ -171,7 +212,8 @@ onMounted(() => {
   background-color: #f9fcff;
   border: 1px solid #e0e0e0;
   border-radius: 4px;
-  height: 500px;
+  height: 540px;
+  touch-action: none;
 }
 .output-container {
   width: 100%;
@@ -181,7 +223,9 @@ onMounted(() => {
 }
 .output-panels {
   background-color: #f9fcff;
-  height: calc(500px - 101px - 25px);
+  height: calc(
+    540px - 101px - 25px
+  ); /* output-panel.height - InputPanel.height - footer.height */
 }
 .output-tabs {
   background-color: #ffffff;
