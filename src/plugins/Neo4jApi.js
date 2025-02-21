@@ -68,6 +68,10 @@ const Neo4jApi = {
         id: node.id,
         caption: String(node.properties[Object.keys(node.properties)[0]]),
         color: colorMap.get(nodeType),
+        properties: node.properties,
+        nodeOrRelationship: "node",
+        selected: false,
+        type: nodeType,
       };
     };
 
@@ -77,6 +81,10 @@ const Neo4jApi = {
         from: relationship.startNode,
         to: relationship.endNode,
         caption: relationship.type,
+        properties: relationship.properties,
+        nodeOrRelationship: "relationship",
+        selected: false,
+        type: relationship.type,
       };
     };
 

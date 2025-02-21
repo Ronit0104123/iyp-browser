@@ -217,6 +217,8 @@ onMounted(() => {
 .output-panels {
   background-color: #f9fcff;
   height: 100%;
+  box-sizing: border-box;
+  padding: 10px;
 }
 .output-tabs {
   background-color: #ffffff;
