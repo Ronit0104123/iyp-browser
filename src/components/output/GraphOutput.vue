@@ -20,7 +20,8 @@ const selectedElement = ref({
   color: "",
   clicked: false,
 });
-const hideProperties = ref(false);
+const hideOverviewBtn = ref(false);
+const overview = ref();
 let nvl = null;
 
 const options = {
@@ -28,6 +29,17 @@ const options = {
   layout: "forceDirected",
   initialZoom: 1.5,
   renderer: "canvas",
+};
+
+const hideOverview = () => {
+  hideOverviewBtn.value = !hideOverviewBtn.value;
+  if (hideOverviewBtn.value) {
+    overview.value.$el.style.width = "auto";
+    overview.value.$el.style.height = "auto";
+  } else {
+    overview.value.$el.style.width = "250px";
+    overview.value.$el.style.height = "100%";
+  }
 };
 
 const updateNvlElementselectedElement = (element) => {
@@ -164,27 +176,35 @@ onUnmounted(() => {
 <template>
   <div class="graph">
     <div ref="graph"></div>
-    <q-card class="overview">
-      <q-card-section>
-        <div v-if="selectedElement.nodeOrRelationship === 'node'">
-          <div class="text-subtitle1">Node properties</div>
-          <q-badge
-            rounded
-            :label="selectedElement.type"
-            text-color="black"
-            :style="`background-color: ${selectedElement.color};`"
-          />
-        </div>
-        <div v-else-if="selectedElement.nodeOrRelationship === 'relationship'">
-          <div class="text-subtitle1">Relationship properties</div>
-          <q-badge
-            :label="selectedElement.type"
-            text-color="white"
-            style="background-color: #848484"
-          />
-        </div>
-        <div v-else>
-          <div class="text-subtitle1">Overview</div>
+    <q-card class="overview" ref="overview">
+      <q-bar class="fixed-top overview-bar">
+        <!-- your q-bar content here -->
+        <q-btn @click="hideOverview" />
+      </q-bar>
+      <q-card-section style="padding-top: 0" v-if="!hideOverviewBtn">
+        <div class="fixed-top overview-info">
+          <div v-if="selectedElement.nodeOrRelationship === 'node'">
+            <div class="text-subtitle1">Node properties</div>
+            <q-badge
+              rounded
+              :label="selectedElement.type"
+              text-color="black"
+              :style="`background-color: ${selectedElement.color};`"
+            />
+          </div>
+          <div
+            v-else-if="selectedElement.nodeOrRelationship === 'relationship'"
+          >
+            <div class="text-subtitle1">Relationship properties</div>
+            <q-badge
+              :label="selectedElement.type"
+              text-color="white"
+              style="background-color: #848484"
+            />
+          </div>
+          <div v-else>
+            <div class="text-subtitle1">Overview</div>
+          </div>
         </div>
         <q-markup-table flat wrap-cells dense>
           <thead></thead>
@@ -231,5 +251,16 @@ onUnmounted(() => {
   max-width: 120px;
   word-wrap: break-word;
   padding-right: 0px !important;
+}
+.overview-bar {
+  position: sticky;
+  top: 0px;
+  z-index: 1;
+  height: 30px;
+}
+.overview-info {
+  position: sticky;
+  top: 30px;
+  z-index: 1;
 }
 </style>

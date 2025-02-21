@@ -5,7 +5,7 @@ import GraphOutput from "@/components/output/GraphOutput.vue";
 import TableOutput from "@/components/output/TableOutput.vue";
 import ExplanationOutput from "@/components/output/ExplanationOutput.vue";
 import { version } from "../../package.json";
-import interact from "@interactjs/interactjs";
+import interact from "interactjs";
 
 const Neo4jApi = inject("Neo4jApi");
 const LlmApi = inject("LlmApi");
@@ -76,19 +76,23 @@ const run = async (queryInput, queryInputType) => {
 
 onMounted(() => {
   run(props.query, props.queryTypeInput);
-  interact(outputPanel.value).resizable({
-    edges: { top: false, left: false, bottom: true, right: false },
-    listeners: {
-      move: (event) => {
-        outputPanel.value.style.height = `${event.rect.height}px`;
+  interact(outputPanel.value)
+    .origin("self")
+    .resizable({
+      edges: { top: false, left: false, bottom: true, right: false },
+      inertia: true,
+      listeners: {
+        move: (event) => {
+          outputPanel.value.style.height = `${event.rect.height}px`;
+        },
       },
-    },
-    modifiers: [
-      interact.modifiers.restrictSize({
-        min: { height: 540 },
-      }),
-    ],
-  });
+      modifiers: [
+        interact.modifiers.restrictSize({
+          min: { height: 540 },
+          max: { height: 800 },
+        }),
+      ],
+    });
 });
 </script>
 

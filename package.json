@@ -11,13 +11,13 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
-    "@interactjs/interactjs": "^1.10.27",
     "@neo4j-cypher/language-support": "^2.0.0-next.6",
     "@neo4j-nvl/base": "^0.3.6",
     "@neo4j-nvl/interaction-handlers": "^0.3.6",
     "@neo4j-nvl/layout-workers": "^0.3.6",
     "@quasar/extras": "^1.16.17",
     "axios": "^1.7.9",
+    "interactjs": "^1.10.27",
     "monaco-editor": "^0.52.2",
     "quasar": "^2.17.7",
     "randomcolor": "^0.6.2",
