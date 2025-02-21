@@ -125,7 +125,7 @@ onMounted(() => {
     keybindings: [monaco.KeyMod.Shift | monaco.KeyCode.Enter],
     run: () => {
       runQuery();
-    }
+    },
   });
 });
 </script>
@@ -149,15 +149,9 @@ onMounted(() => {
           class="q-mr-md"
           @click="runQuery"
         />
-        <q-btn
-          flat
-          square
-          color="red"
-          icon="close"
-          @click="clearQuery"
-        />
+        <q-btn flat square color="red" icon="close" @click="clearQuery" />
       </div>
-      <div class="row justify-center" style="width: 100%;">
+      <div class="row justify-center" style="width: 100%">
         <Feedback />
       </div>
     </div>

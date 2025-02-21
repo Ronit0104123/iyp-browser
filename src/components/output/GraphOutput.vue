@@ -51,6 +51,11 @@ onUnmounted(() => {
   <div ref="graph-container row">
     <div class="graph">
       <div ref="graph"></div>
+      <q-card class="overview">
+        <q-card-section>
+          Test
+        </q-card-section>
+      </q-card>
     </div>
   </div>
 </template>
@@ -61,7 +66,15 @@ onUnmounted(() => {
   height: 100%;
 }
 .graph {
+  position: absolute;
   width: 100%;
-  height: 460px;
+  height: 100%;
+}
+.overview {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  width: 100px;
+  height: 100%;
 }
 </style>

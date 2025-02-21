@@ -78,7 +78,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="output-panel row">
+  <div class="output-panel">
     <InputPanel
       :cypher-input="cypherQuery"
       :text-input="textQuery"
@@ -87,7 +87,7 @@ onMounted(() => {
       @run="run"
       @clear="emits('clear')"
     />
-    <q-skeleton v-if="loading" width="100%" height="480px" animation="wave" />
+    <q-skeleton v-if="loading" width="100%" height="100%" animation="wave" />
     <div v-else class="output-container">
       <q-splitter v-model="splitter" disable unit="px" class="output-tabs">
         <template v-slot:before>
@@ -104,56 +104,61 @@ onMounted(() => {
         </template>
         <template v-slot:after>
           <q-tab-panels v-model="tab" vertical class="output-panels">
-            <q-tab-panel name="graph" v-if="nodes.length">
+            <q-tab-panel name="graph" v-if="nodes.length" class="output-tab-panel">
               <GraphOutput :nodes="nodes" :relationships="relationships" />
             </q-tab-panel>
-            <q-tab-panel name="table" v-if="rows.length">
+            <q-tab-panel name="table" v-if="rows.length" class="output-tab-panel">
               <TableOutput :rows="rows" :columns="columns" />
             </q-tab-panel>
-            <q-tab-panel name="explanation" v-if="textQuery !== ''">
+            <q-tab-panel name="explanation" v-if="textQuery !== ''" class="output-tab-panel">
               <ExplanationOutput :text="explanationText" />
             </q-tab-panel>
-            <q-tab-panel name="error" v-if="errorText !== ''">
+            <q-tab-panel name="error" v-if="errorText !== ''" class="output-tab-panel">
               <p>{{ errorText }}</p>
             </q-tab-panel>
           </q-tab-panels>
         </template>
       </q-splitter>
     </div>
-    <div class="row footer">
-      <div class="col" style="text-align: left">
-        <q-img src="@/assets/logo.svg" style="height: 20px; max-width: 20px" />
-        Internet Yellow Pages Browser
-        <a :href="`https://github.com/InternetHealthReport/iyp-browser/releases/tag/v${version}`" target="_blank">
-          <q-badge color="red">v{{ version }}</q-badge>
-        </a>
-      </div>
-      <!-- <div class="col" style="text-align: center;">
-        GitHub
-      </div> -->
-      <div class="col" style="text-align: right">
-        This work is licensed under
-        <a
-          href="https://creativecommons.org/licenses/by-nc-sa/4.0"
-          target="_blank"
-          >CC BY-NC-SA 4.0</a
-        >
-        <q-img
-          src="https://mirrors.creativecommons.org/presskit/icons/cc.svg"
-          style="height: 15px; max-width: 15px"
-        />
-        <q-img
-          src="https://mirrors.creativecommons.org/presskit/icons/by.svg"
-          style="height: 15px; max-width: 15px"
-        />
-        <q-img
-          src="https://mirrors.creativecommons.org/presskit/icons/nc.svg"
-          style="height: 15px; max-width: 15px"
-        />
-        <q-img
-          src="https://mirrors.creativecommons.org/presskit/icons/sa.svg"
-          style="height: 15px; max-width: 15px"
-        />
+    <div class="footer">
+      <div class="row">
+        <div class="col" style="text-align: left">
+          <q-img src="@/assets/logo.svg" style="height: 20px; max-width: 20px" />
+          Internet Yellow Pages Browser
+          <a
+            :href="`https://github.com/InternetHealthReport/iyp-browser/releases/tag/v${version}`"
+            target="_blank"
+          >
+            <q-badge color="red">v{{ version }}</q-badge>
+          </a>
+        </div>
+        <!-- <div class="col" style="text-align: center;">
+          GitHub
+        </div> -->
+        <div class="col" style="text-align: right">
+          This work is licensed under
+          <a
+            href="https://creativecommons.org/licenses/by-nc-sa/4.0"
+            target="_blank"
+            >CC BY-NC-SA 4.0</a
+          >
+          <q-img
+            src="https://mirrors.creativecommons.org/presskit/icons/cc.svg"
+            style="height: 15px; max-width: 15px"
+          />
+          <q-img
+            src="https://mirrors.creativecommons.org/presskit/icons/by.svg"
+            style="height: 15px; max-width: 15px"
+          />
+          <q-img
+            src="https://mirrors.creativecommons.org/presskit/icons/nc.svg"
+            style="height: 15px; max-width: 15px"
+          />
+          <q-img
+            src="https://mirrors.creativecommons.org/presskit/icons/sa.svg"
+            style="height: 15px; max-width: 15px"
+          />
+        </div>
       </div>
     </div>
   </div>
@@ -161,16 +166,22 @@ onMounted(() => {
 
 <style scoped>
 .output-panel {
+  display: flex;
+  flex-direction: column;
   background-color: #f9fcff;
   border: 1px solid #e0e0e0;
   border-radius: 4px;
+  height: 500px;
 }
 .output-container {
   width: 100%;
+  height: 0;
+  flex: 1;
+  overflow-y: auto;
 }
 .output-panels {
-  height: 480px;
   background-color: #f9fcff;
+  height: calc(500px - 101px - 25px);
 }
 .output-tabs {
   background-color: #ffffff;
@@ -182,9 +193,13 @@ onMounted(() => {
   border-bottom-left-radius: 4px;
   border-bottom-right-radius: 4px;
   padding: 1px;
+  height: 24px;
 }
 .footer,
 a {
   color: #ffffff;
+}
+.output-tab-panel {
+  padding: 0;
 }
 </style>
