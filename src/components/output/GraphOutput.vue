@@ -20,6 +20,7 @@ const selectedElement = ref({
   color: "",
   clicked: false,
 });
+const hideProperties = ref(false);
 let nvl = null;
 
 const options = {
@@ -181,6 +182,9 @@ onUnmounted(() => {
             text-color="white"
             style="background-color: #848484"
           />
+        </div>
+        <div v-else>
+          <div class="text-subtitle1">Overview</div>
         </div>
         <q-markup-table flat wrap-cells dense>
           <thead></thead>
