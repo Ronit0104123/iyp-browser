@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onUnmounted, watch, inject } from "vue";
+import { ref, onMounted, onUnmounted, watch } from "vue";
 import { NVL } from "@neo4j-nvl/base";
 import {
   ZoomInteraction,
@@ -21,25 +21,41 @@ const selectedElement = ref({
   clicked: false,
 });
 const hideOverviewBtn = ref(false);
+const hideOverviewBtnIcon = ref("keyboard_arrow_up");
 const overview = ref();
 let nvl = null;
 
 const options = {
   disableTelemetry: true,
   layout: "forceDirected",
-  initialZoom: 1.5,
+  initialZoom: 2.6,
   renderer: "canvas",
+  maxZoom: 3,
+  minZoom: 1,
 };
 
 const hideOverview = () => {
   hideOverviewBtn.value = !hideOverviewBtn.value;
   if (hideOverviewBtn.value) {
-    overview.value.$el.style.width = "auto";
     overview.value.$el.style.height = "auto";
+    hideOverviewBtnIcon.value = "keyboard_arrow_down";
   } else {
     overview.value.$el.style.width = "250px";
     overview.value.$el.style.height = "100%";
+    hideOverviewBtnIcon.value = "keyboard_arrow_up";
   }
+};
+
+const zoomIn = () => {
+  nvl.setZoom(nvl.getScale() + 0.5);
+};
+
+const zoomOut = () => {
+  nvl.setZoom(nvl.getScale() - 0.5);
+};
+
+const reset = () => {
+  nvl.resetZoom();
 };
 
 const updateNvlElementselectedElement = (element) => {
@@ -108,12 +124,10 @@ const updateNvlElementselectedElement = (element) => {
 const init = (nodes, relationships) => {
   if (nodes.length) {
     nvl = new NVL(graph.value, nodes, relationships, options);
-    nvl.getNodeById;
     nvl.setDisableWebGL(true);
-    nvl.getNodeById;
     new ZoomInteraction(nvl);
     new PanInteraction(nvl);
-    new DragNodeInteraction(nvl);
+    new DragNodeInteraction(nvl).updateCallback("onDrag", (nodes) => {});
     new HoverInteraction(nvl).updateCallback(
       "onHover",
       (element, hitElements, event) => {
@@ -178,8 +192,24 @@ onUnmounted(() => {
     <div ref="graph"></div>
     <q-card class="overview" ref="overview">
       <q-bar class="fixed-top overview-bar">
-        <!-- your q-bar content here -->
-        <q-btn @click="hideOverview" />
+        <div class="row justify-between" style="width: 100%">
+          <q-btn icon="zoom_in" flat square color="white" @click="zoomIn" />
+          <q-btn icon="zoom_out" flat square color="white" @click="zoomOut" />
+          <q-btn
+            icon="center_focus_strong"
+            flat
+            square
+            color="white"
+            @click="reset"
+          />
+          <q-btn
+            :icon="hideOverviewBtnIcon"
+            flat
+            square
+            color="white"
+            @click="hideOverview"
+          />
+        </div>
       </q-bar>
       <q-card-section style="padding-top: 0" v-if="!hideOverviewBtn">
         <div class="fixed-top overview-info">
@@ -257,10 +287,12 @@ onUnmounted(() => {
   top: 0px;
   z-index: 1;
   height: 30px;
+  background-color: #263238;
 }
 .overview-info {
   position: sticky;
   top: 30px;
   z-index: 1;
+  background-color: white;
 }
 </style>
