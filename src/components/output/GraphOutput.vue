@@ -28,7 +28,7 @@ let nvl = null;
 const options = {
   disableTelemetry: true,
   layout: "forceDirected",
-  initialZoom: 2.6,
+  initialZoom: 1,
   renderer: "canvas",
   maxZoom: 3,
   minZoom: 1,
@@ -234,6 +234,41 @@ onUnmounted(() => {
           </div>
           <div v-else>
             <div class="text-subtitle1">Overview</div>
+            <div class="text-subtitle2">Node labels</div>
+            <div>
+              <span
+                class="q-mr-sm"
+                v-for="(node, index) in nodes
+                  .map((el) => ({ type: el.type, color: el.color }))
+                  .filter(
+                    (value, index, self) =>
+                      index === self.findIndex((t) => t.type === value.type),
+                  )"
+                :key="index"
+              >
+                <q-badge
+                  :label="node.type"
+                  text-color="black"
+                  :style="`background-color: ${node.color};`"
+                />
+              </span>
+            </div>
+            <div class="text-subtitle2">Relationship types</div>
+            <div>
+              <span
+                class="q-mr-sm"
+                v-for="(relType, index) in [
+                  ...new Set(relationships.map((el) => el.type)),
+                ]"
+                :key="index"
+              >
+                <q-badge
+                  :label="relType"
+                  text-color="white"
+                  style="background-color: #848484"
+                />
+              </span>
+            </div>
           </div>
         </div>
         <q-markup-table flat wrap-cells dense>
