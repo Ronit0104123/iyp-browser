@@ -6,7 +6,12 @@ import TableOutput from "@/components/output/TableOutput.vue";
 import ExplanationOutput from "@/components/output/ExplanationOutput.vue";
 import { version } from "../../package.json";
 import interact from "interactjs";
-
+import { useRoute } from 'vue-router';
+import {
+  QBtn,
+  QTooltip,
+  copyToClipboard
+} from 'quasar'
 const Neo4jApi = inject("Neo4jApi");
 const LlmApi = inject("LlmApi");
 
@@ -34,6 +39,10 @@ const runCypher = async (cypher) => {
   if (res["error"] === undefined) {
     nodes.value = res.graph.nodes;
     relationships.value = res.graph.relationships;
+    //console.log("nodes", nodes.value)
+    //console.log("ROWS", res.table.rows)
+    //console.log("COLUMNS", res.table.columns)
+
     rows.value = res.table.rows;
     columns.value = res.table.columns;
     if (!nodes.value.length) {
@@ -74,6 +83,43 @@ const run = async (queryInput, queryInputType) => {
   }
 };
 
+const route = useRoute();
+
+const getShareableUrl = () => {
+  let baseUrl = `${window.location.origin}/share`;
+  let encodedQuery = encodeURIComponent(cypherQuery.value);
+  let encodedType = encodeURIComponent(queryType.value);
+  let shareUrl = `${baseUrl}?q=${encodedQuery}&type=${encodedType}`;
+  window.open(shareUrl, '_blank');
+  return shareUrl;
+};
+
+
+const isIframeMode = route.name === "IframeOutputPanel";
+
+const openIframe = () => {
+  let baseUrl = `${window.location.origin}/iframe`;
+  let encodedQuery = encodeURIComponent(cypherQuery.value);
+  let encodedType = encodeURIComponent(queryType.value);
+  let iframeUrl = `${baseUrl}?q=${encodedQuery}&type=${encodedType}`;
+  window.open(iframeUrl, '_blank');
+};
+
+
+
+const isFullscreen = ref(false);
+
+const toggleFullscreen = () => {
+  if (!isFullscreen.value) {
+    outputPanel.value.requestFullscreen();
+  } else {
+    document.exitFullscreen();
+  }
+  isFullscreen.value = !isFullscreen.value;
+};
+
+
+
 onMounted(() => {
   run(props.query, props.queryTypeInput);
   interact(outputPanel.value)
@@ -99,6 +145,7 @@ onMounted(() => {
 <template>
   <div class="output-panel" ref="outputPanel">
     <InputPanel
+      v-if="!isIframeMode"
       :cypher-input="cypherQuery"
       :text-input="textQuery"
       :active-tab="queryType"
@@ -129,12 +176,24 @@ onMounted(() => {
               class="output-tab-panel"
             >
               <GraphOutput :nodes="nodes" :relationships="relationships" />
+              <QBtn class="share" dense flat icon="link" @click="copyToClipboard(getShareableUrl())">
+                <QTooltip> Copy Query URL </QTooltip>
+              </QBtn>
+              <QBtn dense flat icon="open_in_new" @click="openIframe">
+                <QTooltip> Share as iframe </QTooltip>
+              </QBtn>
+              <QBtn dense flat icon="fullscreen" @click="toggleFullscreen">
+                <QTooltip>{{ isFullscreen ? "Exit Fullscreen" : "Fullscreen" }}</QTooltip>
+              </QBtn>
             </q-tab-panel>
             <q-tab-panel
               name="table"
               v-if="rows.length"
               class="output-tab-panel"
             >
+              <QBtn dense flat icon="fullscreen" @click="toggleFullscreen">
+                  <QTooltip>{{ isFullscreen ? "Exit Fullscreen" : "Fullscreen" }}</QTooltip>
+              </QBtn>
               <TableOutput :rows="rows" :columns="columns" />
             </q-tab-panel>
             <q-tab-panel
@@ -243,5 +302,10 @@ a {
 }
 .output-tab-panel {
   padding: 0px;
+}
+
+
+.share{
+  
 }
 </style>

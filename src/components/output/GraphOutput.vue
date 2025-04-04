@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onUnmounted, watch } from "vue";
+import { ref, onMounted, onUnmounted, watch, inject } from "vue";
 import { NVL } from "@neo4j-nvl/base";
 import {
   ZoomInteraction,
@@ -10,7 +10,7 @@ import {
 } from "@neo4j-nvl/interaction-handlers";
 
 const props = defineProps(["nodes", "relationships"]);
-
+const Neo4jApi = inject("Neo4jApi");
 const graph = ref();
 const properties = ref({});
 const selectedElement = ref({
@@ -20,11 +20,14 @@ const selectedElement = ref({
   color: "",
   clicked: false,
 });
+
+const nodeTypeColors = ref({});
+
 const hideOverviewBtn = ref(false);
 const hideOverviewBtnIcon = ref("keyboard_arrow_up");
 const overview = ref();
 let nvl = null;
-
+// console.log("nodesprop", props.nodes)
 const options = {
   disableTelemetry: true,
   layout: "forceDirected",
@@ -58,7 +61,17 @@ const reset = () => {
   nvl.resetZoom();
 };
 
-const updateNvlElementselectedElement = (element) => {
+const fetchConnectedNodes = async (nodeId) => {
+  const cypher = `
+      MATCH (n)-[r]->(m)
+      WHERE ID(n) = ${nodeId}
+      RETURN m
+    `
+    const res = await Neo4jApi.run(cypher)
+    return res.graph.nodes
+}
+
+const updateNvlElementselectedElement = async (element) => {
   if (!element && selectedElement.value.clicked) {
     if (selectedElement.value.nodeOrRelationship === "node") {
       const oldNode = nvl.getNodeById(selectedElement.value.id);
@@ -80,6 +93,8 @@ const updateNvlElementselectedElement = (element) => {
     element.selected = true;
     if (element.nodeOrRelationship === "node") {
       nvl.addAndUpdateElementsInGraph([element], []);
+      const newNodes = await fetchConnectedNodes(element.id)
+      nvl.addAndUpdateElementsInGraph([...newNodes], [])
     } else {
       nvl.addAndUpdateElementsInGraph([], [element]);
     }
@@ -124,6 +139,12 @@ const updateNvlElementselectedElement = (element) => {
 const init = (nodes, relationships) => {
   if (nodes.length) {
     nvl = new NVL(graph.value, nodes, relationships, options);
+    props.nodes.forEach((node) => {
+      if (!nodeTypeColors.value[node.type]) {
+        nodeTypeColors.value[node.type] = node.color;
+      }
+    });
+
     nvl.setDisableWebGL(true);
     new ZoomInteraction(nvl);
     new PanInteraction(nvl);
@@ -185,6 +206,16 @@ onUnmounted(() => {
     nvl.destroy();
   }
 });
+
+const updateNodeColor = (type, color) => {
+  nodeTypeColors.value[type] = color;
+  const nodesToUpdate = nvl.getNodes().filter((n) => n.type === type);
+  nodesToUpdate.forEach((n) => {
+    n.color = color;
+  });
+  nvl.addAndUpdateElementsInGraph(nodesToUpdate, []);
+};
+
 </script>
 
 <template>
@@ -236,8 +267,7 @@ onUnmounted(() => {
             <div class="text-subtitle1">Overview</div>
             <div class="text-subtitle2">Node labels</div>
             <div>
-              <span
-                class="q-mr-sm"
+              <div
                 v-for="(node, index) in nodes
                   .map((el) => ({ type: el.type, color: el.color }))
                   .filter(
@@ -245,14 +275,22 @@ onUnmounted(() => {
                       index === self.findIndex((t) => t.type === value.type),
                   )"
                 :key="index"
+                class="row items-center q-mb-sm"
               >
                 <q-badge
                   :label="node.type"
                   text-color="black"
-                  :style="`background-color: ${node.color};`"
+                  :style="`background-color: ${nodeTypeColors[node.type]}; margin-right: 8px;`"
                 />
-              </span>
+                <input
+                  type="color"
+                  v-model="nodeTypeColors[node.type]"
+                  @input="(e) => updateNodeColor(node.type, e.target.value)"
+                  style="width: 30px; height: 20px; padding: 0; border: none; background:transparent"
+                />
+              </div>
             </div>
+
             <div class="text-subtitle2">Relationship types</div>
             <div>
               <span
