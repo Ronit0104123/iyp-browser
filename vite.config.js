@@ -8,6 +8,7 @@ import monacoEditorPlugin from 'vite-plugin-monaco-editor'
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: "/iyp-browser/",
   plugins: [
     vue({
       template: { transformAssetUrls }
