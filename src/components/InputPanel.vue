@@ -160,6 +160,7 @@ onMounted(async () => {
             insertText: `${item.rel} -> (${item.node})`,
           });
         });
+
       } else if (matchRel) {
 
         const relType = matchRel[1];
@@ -167,7 +168,7 @@ onMounted(async () => {
           `MATCH (n)-[r:\`${relType}\`]-(m) RETURN DISTINCT labels(n) AS source, labels(m) AS target`
         );
 
-        res.forEach((item) => {
+        res.table.rows.forEach((item) => {
           dynamicSuggestions.push({
             label: `${item.source} -[${relType}]- ${item.target}`,
             kind: monaco.languages.CompletionItemKind.Keyword,
@@ -185,12 +186,13 @@ onMounted(async () => {
       insertText: item.label,
       range: item.range,
       }));
-
+      console.log(staticSuggestions)
     return {
       suggestions: [...staticSuggestions, ...dynamicSuggestions],
     };
+
     },
-  });
+  }),
   editor.addAction({
     id: "run",
     label: "Run",

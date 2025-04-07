@@ -62,13 +62,18 @@ const reset = () => {
 };
 
 const fetchConnectedNodes = async (nodeId) => {
+  console.log("lesgoo")
   const cypher = `
       MATCH (n)-[r]->(m)
       WHERE ID(n) = ${nodeId}
-      RETURN m
+      RETURN r, m
     `
     const res = await Neo4jApi.run(cypher)
-    return res.graph.nodes
+    console.log("GOD", res)
+    return {
+    nodes: res.graph.nodes,
+    relationships: res.graph.relationships,
+    }
 }
 
 const updateNvlElementselectedElement = async (element) => {
@@ -93,8 +98,8 @@ const updateNvlElementselectedElement = async (element) => {
     element.selected = true;
     if (element.nodeOrRelationship === "node") {
       nvl.addAndUpdateElementsInGraph([element], []);
-      const newNodes = await fetchConnectedNodes(element.id)
-      nvl.addAndUpdateElementsInGraph([...newNodes], [])
+      const { nodes, relationships } = await fetchConnectedNodes(element.id)
+      nvl.addAndUpdateElementsInGraph([...nodes], [...relationships])
     } else {
       nvl.addAndUpdateElementsInGraph([], [element]);
     }
@@ -277,17 +282,19 @@ const updateNodeColor = (type, color) => {
                 :key="index"
                 class="row items-center q-mb-sm"
               >
-                <q-badge
-                  :label="node.type"
-                  text-color="black"
-                  :style="`background-color: ${nodeTypeColors[node.type]}; margin-right: 8px;`"
-                />
-                <input
-                  type="color"
-                  v-model="nodeTypeColors[node.type]"
-                  @input="(e) => updateNodeColor(node.type, e.target.value)"
-                  style="width: 30px; height: 20px; padding: 0; border: none; background:transparent"
-                />
+                <label style="position: relative; display: inline-block; cursor: pointer;">
+                  <q-badge
+                    :label="node.type"
+                    text-color="black"
+                    :style="`background-color: ${nodeTypeColors[node.type]}; margin-right: 8px;`"
+                  />
+                  <input
+                    type="color"
+                    v-model="nodeTypeColors[node.type]"
+                    @input="(e) => updateNodeColor(node.type, e.target.value)"
+                    style="opacity: 0; width: 0; height: 0; position: absolute;"
+                  />
+                </label>
               </div>
             </div>
 
