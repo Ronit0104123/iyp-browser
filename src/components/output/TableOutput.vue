@@ -1,7 +1,6 @@
 <script setup>
 import { computed } from "vue"
 const props = defineProps(["rows", "columns"]);
-
 const formattedColumns = computed(() => {
   if (!props.rows || props.rows.length === 0) return [];
   const allKeys = new Set();
@@ -19,6 +18,7 @@ const formattedColumns = computed(() => {
   ];
 });
 
+window.open(`https://www.ihr.live/en/country/${stringVal}`, '_blank')
 
 const formattedRows = computed(() => {
   if (!props.rows) return [];
@@ -27,6 +27,7 @@ const formattedRows = computed(() => {
     let formattedRow = { index: index + 1 };
 
     Object.keys(row).forEach((key) => {
+      // console.log(row[key])
       try {
         formattedRow[key] =
         (
@@ -47,12 +48,48 @@ const formattedRows = computed(() => {
   });
 });
 
-console.log("FROWS", formattedRows)
-console.log("FCOLS", formattedColumns)
+// console.log("FROWS", formattedRows)
+// console.log("FCOLS", formattedColumns)
+
+const isLinkable = (val) => {
+  const str = String(val);
+  return (
+    /^AS?\d+$/.test(str) || /^\d+$/.test(str)
+  );
+};
+
+
+const goToIHR = (val) => {
+  const stringVal = String(val);
+  const asn = stringVal.replace(/^AS/, '');
+  window.open(`https://www.ihr.live/en/network/AS${asn}`, '_blank');
+};
+
+
 </script>
 
 <template>
-   <q-table flat :rows="formattedRows" :columns="formattedColumns" row-key="index" />
+<q-table
+  flat
+  :rows="formattedRows"
+  :columns="formattedColumns"
+  row-key="index"
+>
+  <template v-slot:body-cell="props">
+    <q-td :props="props">
+      <span
+        v-if="props.col.name !== 'index' && isLinkable(props.value)"
+        class="text-primary cursor-pointer"
+        @click="goToIHR(props.value)"
+      >
+        {{ props.value }}
+      </span>
+      <span v-else>
+        {{ props.value }}
+      </span>
+    </q-td>
+  </template>
+</q-table>
 </template> 
 
 

@@ -1,19 +1,57 @@
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import InputPanel from "@/components/InputPanel.vue";
 import OutputPanel from "@/components/OutputPanel.vue";
 import { uid } from "quasar";
 
-const queries = ref([]);
+import { useRouter, useRoute } from "vue-router";
+const router = useRouter();
+const route = useRoute();
 
+const queries = ref([]);
 const runQuery = (query, queryType) => {
   const uuid = uid();
   queries.value.push({ query, queryType, uuid });
+  const currentQueries = queries.value.map((q) => q.query);
+  const queryParam = JSON.stringify(currentQueries); 
+  router.push({
+    path: '/',
+    query: {
+      q: queryParam
+    }
+  });
+};
+
+const updateURLFromQueries = () => {
+  const currentQueries = queries.value.map((q) => q.query);
+  const queryParam = JSON.stringify(currentQueries);
+  router.replace({
+    path: '/',
+    query: { q: queryParam}
+  });
 };
 
 const clearQuery = (uuid) => {
+
   queries.value = queries.value.filter((query) => query.uuid !== uuid);
+
+  if (queries.value.length === 0) {
+    window.location.replace('/');
+  } else {
+    updateURLFromQueries();
+  } 
 };
+
+onMounted(() => {
+  const qParam = route.query.q;
+  if (qParam) {
+    const parsedQueries = JSON.parse(qParam);
+    parsedQueries.forEach((queryString) => {
+      runQuery(queryString, "cypher");
+    });
+  }
+});
+
 </script>
 
 <template>

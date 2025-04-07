@@ -121,11 +121,11 @@ onMounted(async () => {
     aliases: ["Cypher", "cypher"],
   });
 
-  //console.log("Schema", schema)
-  // const res = await Neo4jApi.run("CALL schema.visualization()");
-  // const res2 = await Neo4jApi.run('MATCH (n)-[r]-(m) RETURN DISTINCT labels(n), type(r), labels(m)');
-  // console.log("schema2", res)
-  // console.log("Cypher-approach ", res2) 
+  console.log("Schema", schema)
+  const res = await Neo4jApi.run("CALL schema.visualization()");
+  const res2 = await Neo4jApi.run('MATCH (n)-[r]-(m) RETURN DISTINCT labels(n), type(r), labels(m)');
+  console.log("schema2", res)
+  console.log("Cypher-approach ", res2) 
 
   monaco.languages.registerCompletionItemProvider("cypher", {
     triggerCharacters: [' ', ':', '(', ')', '{', '}', ...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'],
@@ -139,16 +139,20 @@ onMounted(async () => {
 
     let matchNode = textUtilPosition.match(/:\s*([A-Za-z0-9_]+)/);
     let matchRel = textUtilPosition.match(/\[\s*:\s*([A-Za-z0-9_]+)/);
+
     let dynamicSuggestions = [];
 
     try {
       if (matchNode && matchNode[1].length > 1) {
+
         const nodeLabel = matchNode[1];
         const res = await Neo4jApi.run(
           `MATCH (n:\`${nodeLabel}\`)-[r]-(m) RETURN DISTINCT type(r) AS rel, labels(m) AS node`
         );
-        // console.log("matchNode", matchNode)
-        // console.log("res", res)
+
+        console.log("matchNode", matchNode)
+        console.log("res", res)
+
         res.table.rows.forEach((item) => {
           dynamicSuggestions.push({
             label: `${item.rel} -> ${item.node}`,
@@ -157,10 +161,12 @@ onMounted(async () => {
           });
         });
       } else if (matchRel) {
+
         const relType = matchRel[1];
         const res = await Neo4jApi.run(
           `MATCH (n)-[r:\`${relType}\`]-(m) RETURN DISTINCT labels(n) AS source, labels(m) AS target`
         );
+
         res.forEach((item) => {
           dynamicSuggestions.push({
             label: `${item.source} -[${relType}]- ${item.target}`,
@@ -170,10 +176,8 @@ onMounted(async () => {
         });
       }
     } catch (err) {
-      // console.error("AutoComplete Query Error: ", err);
+      console.error("AutoComplete Query Error: ", err);
     }
-
-
       const completionItems = autocomplete(textUtilPosition, schema);
       const staticSuggestions = completionItems.map((item) => ({
       label: item.label,
