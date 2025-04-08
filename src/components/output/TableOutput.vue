@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from "vue"
 const props = defineProps(["rows", "columns"]);
+
 const formattedColumns = computed(() => {
   if (!props.rows || props.rows.length === 0) return [];
   const allKeys = new Set();
@@ -18,27 +19,57 @@ const formattedColumns = computed(() => {
   ];
 });
 
-window.open(`https://www.ihr.live/en/country/${stringVal}`, '_blank')
+
+// const formattedRows = computed(() => {
+//   if (!props.rows) return [];
+
+//   return props.rows.map((row, index) => {
+//     let formattedRow = { index: index + 1 };
+
+//     Object.keys(row).forEach((key) => {
+//       // console.log(row[key])
+//       try {
+//         formattedRow[key] =
+//         (
+//           JSON.parse(row[key]).name ??
+//           JSON.parse(row[key]).prefix ??
+//           JSON.parse(row[key]).asn ??
+//           JSON.parse(row[key]).ip ??
+//           JSON.parse(row[key]).rank ??
+//           JSON.parse(row[key]).reference_org ??
+//           row[key]
+//         )
+//       } catch (error) {
+//         formattedRow[key] = row[key];
+//       }
+//     });
+
+//     return formattedRow;
+//   });
+// });
+
+// console.log("FROWS", formattedRows)
+// console.log("FCOLS", formattedColumns)
 
 const formattedRows = computed(() => {
   if (!props.rows) return [];
-
+  
   return props.rows.map((row, index) => {
-    let formattedRow = { index: index + 1 };
 
+    let formattedRow = { index: index + 1 };
     Object.keys(row).forEach((key) => {
-      // console.log(row[key])
       try {
-        formattedRow[key] =
-        (
-          JSON.parse(row[key]).name ??
-          JSON.parse(row[key]).prefix ??
-          JSON.parse(row[key]).asn ??
-          JSON.parse(row[key]).ip ??
-          JSON.parse(row[key]).rank ??
-          JSON.parse(row[key]).reference_org ??
-          row[key]
-        )
+        const parsed = typeof row[key] === 'string' ? JSON.parse(row[key]) : row[key];
+        if (typeof parsed === 'object' && parsed !== null) {
+          const keys = Object.keys(parsed);
+          if (keys.length === 1) {
+            formattedRow[key] = parsed[keys[0]];
+          } else {
+            formattedRow[key] = JSON.stringify(parsed, null, 2);
+          }
+        } else {
+          formattedRow[key] = row[key];
+        }
       } catch (error) {
         formattedRow[key] = row[key];
       }
@@ -48,8 +79,12 @@ const formattedRows = computed(() => {
   });
 });
 
-// console.log("FROWS", formattedRows)
-// console.log("FCOLS", formattedColumns)
+
+const isProbablyJSON = (val) => {
+  if (typeof val !== 'string') return false;
+  return val.trim().startsWith('{') || val.trim().startsWith('[');
+};
+
 
 const isLinkable = (val) => {
   const str = String(val);
@@ -84,6 +119,13 @@ const goToIHR = (val) => {
       >
         {{ props.value }}
       </span>
+      <pre
+        v-else-if="isProbablyJSON(props.value)"
+        class="bg-grey-2 q-pa-sm q-ma-none text-left"
+        style="white-space: pre-wrap; word-break: break-word;"
+      >
+        {{ props.value }}
+      </pre>
       <span v-else>
         {{ props.value }}
       </span>

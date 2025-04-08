@@ -62,14 +62,14 @@ const reset = () => {
 };
 
 const fetchConnectedNodes = async (nodeId) => {
-  console.log("lesgoo")
   const cypher = `
       MATCH (n)-[r]->(m)
       WHERE ID(n) = ${nodeId}
       RETURN r, m
+      LIMIT 100
     `
     const res = await Neo4jApi.run(cypher)
-    console.log("GOD", res)
+
     return {
     nodes: res.graph.nodes,
     relationships: res.graph.relationships,
@@ -98,8 +98,10 @@ const updateNvlElementselectedElement = async (element) => {
     element.selected = true;
     if (element.nodeOrRelationship === "node") {
       nvl.addAndUpdateElementsInGraph([element], []);
+
       const { nodes, relationships } = await fetchConnectedNodes(element.id)
       nvl.addAndUpdateElementsInGraph([...nodes], [...relationships])
+      
     } else {
       nvl.addAndUpdateElementsInGraph([], [element]);
     }
