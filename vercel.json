@@ -1,6 +1,7 @@
 {
     "rewrites": [
-      { "source": "/(.*)", "destination": "/index.html" }
+      { "source": "/iyp-browser(/.*)?", "destination": "/iyp-browser/index.html" }
     ]
   }
+  
   
