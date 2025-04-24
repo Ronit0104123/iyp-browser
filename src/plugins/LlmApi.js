@@ -13,7 +13,10 @@ const LlmApi = {
     });
 
     const run = async (query) => {
+      // Wrap Pythia is an API and add the post request.
       // let response = await axios_base.post("", {});
+
+      // Static response for development
       return {
         cypher: "MATCH p = (:AS {asn:2497})--(:Name) RETURN p",
         explanation: "Based on the given results, the name of AS2497 is 'IIJ'.",
