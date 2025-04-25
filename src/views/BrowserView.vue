@@ -24,6 +24,25 @@ const shareQuery = (query) => {
   copyToClipboard(urlToShare);
 };
 
+const updateQuery = (query, uuid) => {
+  const index = queries.value.findIndex((obj) => obj.uuid === uuid);
+  if (
+    queries.value[index].query !== query.query ||
+    queries.value[index].queryType !== query.queryType
+  ) {
+    queries.value = queries.value.map((obj) => {
+      if (obj.uuid === uuid) {
+        return {
+          ...obj,
+          query: query.query,
+          queryType: query.queryType,
+        };
+      }
+      return obj;
+    });
+  }
+};
+
 const pushRoute = () => {
   router.push({
     replace: true,
@@ -58,6 +77,7 @@ watch(
           :disable-resizer="false"
           @clear="clearQuery(query.uuid)"
           @share="shareQuery(query)"
+          @update="updateQuery($event, query.uuid)"
           style="height: 540px"
         />
       </div>

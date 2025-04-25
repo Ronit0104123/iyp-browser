@@ -11,7 +11,7 @@ import Iframe from "@/components/Iframe.vue";
 const Neo4jApi = inject("Neo4jApi");
 const LlmApi = inject("LlmApi");
 
-const emits = defineEmits(["clear", "share"]);
+const emits = defineEmits(["clear", "share", "update"]);
 
 const props = defineProps([
   "query",
@@ -81,6 +81,10 @@ const run = async (queryInput, queryInputType) => {
     textQuery.value = queryInput;
     runLlm(textQuery.value);
   }
+  emits("update", {
+    query: queryInput,
+    queryType: queryInputType,
+  });
 };
 
 const fullscreenQuery = (isFullscreen) => {
@@ -123,7 +127,7 @@ onMounted(() => {
     <q-bar class="output-bar" v-if="!disableTopBar">
       <q-space />
       <q-btn dense flat icon="link" color="white" @click="emits('share')">
-        <q-tooltip> Share </q-tooltip>
+        <q-tooltip>Share</q-tooltip>
       </q-btn>
       <Iframe :query="cypherQuery" />
       <q-btn
@@ -133,10 +137,10 @@ onMounted(() => {
         color="white"
         @click="fullscreenQuery((isFullscreen = !isFullscreen))"
       >
-        <q-tooltip> Fullscreen </q-tooltip>
+        <q-tooltip>Fullscreen</q-tooltip>
       </q-btn>
       <q-btn dense flat icon="close" color="white" @click="emits('clear')">
-        <q-tooltip> Close </q-tooltip>
+        <q-tooltip>Close</q-tooltip>
       </q-btn>
     </q-bar>
     <InputPanel
