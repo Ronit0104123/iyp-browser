@@ -1,10 +1,13 @@
 <script setup>
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import InputPanel from "@/components/InputPanel.vue";
 import OutputPanel from "@/components/OutputPanel.vue";
 import { uid } from "quasar";
+import { useRoute, useRouter } from "vue-router";
 
-const queries = ref([]);
+const route = useRoute();
+const router = useRouter();
+const queries = ref(route.query.session ? JSON.parse(route.query.session) : []);
 
 const runQuery = (query, queryType) => {
   const uuid = uid();
@@ -14,6 +17,19 @@ const runQuery = (query, queryType) => {
 const clearQuery = (uuid) => {
   queries.value = queries.value.filter((query) => query.uuid !== uuid);
 };
+
+const pushRoute = () => {
+  router.push({
+    replace: true,
+    query: Object.assign({}, route.query, {
+      session: JSON.stringify(queries.value),
+    }),
+  })
+};
+
+watch(queries.value, () => {
+  pushRoute();
+});
 </script>
 
 <template>
