@@ -7,7 +7,7 @@ import { copyToClipboard } from "quasar";
 const props = defineProps(["query"]);
 
 const showIframeDialog = ref(false);
-const iFrameCode = ref(`<iframe src="${window.location.origin}/embed/${props.query}" width="100%" height="550px"></iframe>`)
+const iFrameCode = ref(`<iframe src="${window.location.origin}/embed/${props.query}" width="100%" height="500px"></iframe>`)
 </script>
 
 <template>

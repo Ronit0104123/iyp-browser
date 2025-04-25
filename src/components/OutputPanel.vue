@@ -13,7 +13,7 @@ const LlmApi = inject("LlmApi");
 
 const emits = defineEmits(["clear", "share"]);
 
-const props = defineProps(["query", "queryTypeInput", "disableInput", "disableTopBar"]);
+const props = defineProps(["query", "queryTypeInput", "disableInput", "disableTopBar", "disableResizer"]);
 
 const cypherQuery = ref("");
 const textQuery = ref("");
@@ -77,7 +77,8 @@ const run = async (queryInput, queryInputType) => {
 
 onMounted(() => {
   run(props.query, props.queryTypeInput);
-  interact(outputPanel.value)
+  if (!props.disableResizer) {
+    interact(outputPanel.value)
     .origin("self")
     .resizable({
       edges: { top: false, left: false, bottom: true, right: false },
@@ -94,6 +95,7 @@ onMounted(() => {
         }),
       ],
     });
+  }
 });
 </script>
 
@@ -230,7 +232,7 @@ onMounted(() => {
   background-color: #f9fcff;
   border: 1px solid #e0e0e0;
   border-radius: 4px;
-  height: 540px;
+  height: 100%;
   touch-action: none;
 }
 .output-container {

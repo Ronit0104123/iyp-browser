@@ -49,8 +49,10 @@ watch(queries, () => {
           :query-type-input="query.queryType"
           :disable-input="false"
           :disable-top-bar="false"
+          :disable-resizer="false"
           @clear="clearQuery(query.uuid)"
           @share="shareQuery(query)"
+          style="height: 540px;"
         />
       </div>
     </div>
