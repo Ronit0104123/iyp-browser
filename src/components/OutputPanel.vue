@@ -6,13 +6,14 @@ import TableOutput from "@/components/output/TableOutput.vue";
 import ExplanationOutput from "@/components/output/ExplanationOutput.vue";
 import { version } from "../../package.json";
 import interact from "interactjs";
+import Iframe from "./Iframe.vue";
 
 const Neo4jApi = inject("Neo4jApi");
 const LlmApi = inject("LlmApi");
 
 const emits = defineEmits(["clear"]);
 
-const props = defineProps(["query", "queryTypeInput"]);
+const props = defineProps(["query", "queryTypeInput", "disableInput", "disableTopBar"]);
 
 const cypherQuery = ref("");
 const textQuery = ref("");
@@ -98,7 +99,27 @@ onMounted(() => {
 
 <template>
   <div class="output-panel" ref="outputPanel">
+    <q-bar class="output-bar" v-if="!disableTopBar">
+      <q-space />
+      <q-btn dense flat icon="link" color="white">
+        <q-tooltip>
+          Share
+        </q-tooltip>
+      </q-btn>
+      <Iframe :query="cypherQuery" />
+      <q-btn dense flat icon="crop_square" color="white">
+        <q-tooltip>
+          Full screen
+        </q-tooltip>
+      </q-btn>
+      <q-btn dense flat icon="close" color="white" @click="emits('clear')">
+        <q-tooltip>
+          Close
+        </q-tooltip>
+      </q-btn>
+    </q-bar>
     <InputPanel
+      v-if="!disableInput"
       :cypher-input="cypherQuery"
       :text-input="textQuery"
       :active-tab="queryType"
@@ -243,5 +264,10 @@ a {
 }
 .output-tab-panel {
   padding: 0px;
+}
+.output-bar {
+  background-color: #263238;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
 }
 </style>

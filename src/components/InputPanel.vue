@@ -146,12 +146,12 @@ onMounted(() => {
           square
           color="primary"
           icon="play_arrow"
-          class="q-mr-md"
+          class="full-width"
           @click="runQuery"
         />
-        <q-btn flat square color="red" icon="close" @click="clearQuery" />
+        <!-- <q-btn flat square color="red" icon="close" @click="clearQuery" /> -->
       </div>
-      <div class="row justify-center" style="width: 100%">
+      <div class="row" style="width: 100%">
         <Feedback />
       </div>
     </div>

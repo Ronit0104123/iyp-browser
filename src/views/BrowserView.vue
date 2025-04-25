@@ -26,6 +26,8 @@ const clearQuery = (uuid) => {
         <OutputPanel
           :query="query.query"
           :query-type-input="query.queryType"
+          :disable-input="false"
+          :disable-top-bar="false"
           @clear="clearQuery(query.uuid)"
         />
       </div>
