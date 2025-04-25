@@ -2,7 +2,7 @@
 import { ref, watch } from "vue";
 import InputPanel from "@/components/InputPanel.vue";
 import OutputPanel from "@/components/OutputPanel.vue";
-import { uid } from "quasar";
+import { uid, copyToClipboard } from "quasar";
 import { useRoute, useRouter } from "vue-router";
 
 const route = useRoute();
@@ -16,6 +16,11 @@ const runQuery = (query, queryType) => {
 
 const clearQuery = (uuid) => {
   queries.value = queries.value.filter((query) => query.uuid !== uuid);
+};
+
+const shareQuery = (query) => {
+  const urlToShare = `${window.location.origin}/?session=[${JSON.stringify(query)}]`;
+  copyToClipboard(urlToShare);
 };
 
 const pushRoute = () => {
@@ -45,6 +50,7 @@ watch(queries.value, () => {
           :disable-input="false"
           :disable-top-bar="false"
           @clear="clearQuery(query.uuid)"
+          @share="shareQuery(query)"
         />
       </div>
     </div>

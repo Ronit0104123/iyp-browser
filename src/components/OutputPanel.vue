@@ -11,7 +11,7 @@ import Iframe from "./Iframe.vue";
 const Neo4jApi = inject("Neo4jApi");
 const LlmApi = inject("LlmApi");
 
-const emits = defineEmits(["clear"]);
+const emits = defineEmits(["clear", "share"]);
 
 const props = defineProps(["query", "queryTypeInput", "disableInput", "disableTopBar"]);
 
@@ -101,7 +101,7 @@ onMounted(() => {
   <div class="output-panel" ref="outputPanel">
     <q-bar class="output-bar" v-if="!disableTopBar">
       <q-space />
-      <q-btn dense flat icon="link" color="white">
+      <q-btn dense flat icon="link" color="white" @click="emits('share')">
         <q-tooltip>
           Share
         </q-tooltip>
