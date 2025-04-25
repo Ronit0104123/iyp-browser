@@ -6,7 +6,7 @@ import TableOutput from "@/components/output/TableOutput.vue";
 import ExplanationOutput from "@/components/output/ExplanationOutput.vue";
 import { version } from "../../package.json";
 import interact from "interactjs";
-import Iframe from "./Iframe.vue";
+import Iframe from "@/components/Iframe.vue";
 
 const Neo4jApi = inject("Neo4jApi");
 const LlmApi = inject("LlmApi");
