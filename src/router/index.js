@@ -19,7 +19,7 @@ const router = createRouter({
           name: "embed",
           component: EmbedView,
         },
-      ]
+      ],
     },
   ],
 });

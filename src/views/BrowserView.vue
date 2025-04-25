@@ -30,12 +30,16 @@ const pushRoute = () => {
     query: Object.assign({}, route.query, {
       session: JSON.stringify(queries.value),
     }),
-  })
+  });
 };
 
-watch(queries, () => {
-  pushRoute();
-}, { deep: true });
+watch(
+  queries,
+  () => {
+    pushRoute();
+  },
+  { deep: true },
+);
 </script>
 
 <template>
@@ -54,7 +58,7 @@ watch(queries, () => {
           :disable-resizer="false"
           @clear="clearQuery(query.uuid)"
           @share="shareQuery(query)"
-          style="height: 540px;"
+          style="height: 540px"
         />
       </div>
     </div>

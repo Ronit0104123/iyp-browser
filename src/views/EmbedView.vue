@@ -3,8 +3,8 @@ import { ref } from "vue";
 import { useRoute } from "vue-router";
 import OutputPanel from "@/components/OutputPanel.vue";
 
-const route = useRoute()
-const query = ref(route.params.query)
+const route = useRoute();
+const query = ref(route.params.query);
 </script>
 
 <template>
@@ -18,5 +18,4 @@ const query = ref(route.params.query)
   />
 </template>
 
-<style scoped>
-</style>
+<style scoped></style>

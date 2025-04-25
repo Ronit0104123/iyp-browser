@@ -13,7 +13,13 @@ const LlmApi = inject("LlmApi");
 
 const emits = defineEmits(["clear", "share"]);
 
-const props = defineProps(["query", "queryTypeInput", "disableInput", "disableTopBar", "disableResizer"]);
+const props = defineProps([
+  "query",
+  "queryTypeInput",
+  "disableInput",
+  "disableTopBar",
+  "disableResizer",
+]);
 
 const cypherQuery = ref("");
 const textQuery = ref("");
@@ -92,22 +98,22 @@ onMounted(() => {
   run(props.query, props.queryTypeInput);
   if (!props.disableResizer) {
     interact(outputPanel.value)
-    .origin("self")
-    .resizable({
-      edges: { top: false, left: false, bottom: true, right: false },
-      inertia: true,
-      listeners: {
-        move: (event) => {
-          outputPanel.value.style.height = `${event.rect.height}px`;
+      .origin("self")
+      .resizable({
+        edges: { top: false, left: false, bottom: true, right: false },
+        inertia: true,
+        listeners: {
+          move: (event) => {
+            outputPanel.value.style.height = `${event.rect.height}px`;
+          },
         },
-      },
-      modifiers: [
-        interact.modifiers.restrictSize({
-          min: { height: 540 },
-          max: { height: 800 },
-        }),
-      ],
-    });
+        modifiers: [
+          interact.modifiers.restrictSize({
+            min: { height: 540 },
+            max: { height: 800 },
+          }),
+        ],
+      });
   }
 });
 </script>
@@ -117,20 +123,20 @@ onMounted(() => {
     <q-bar class="output-bar" v-if="!disableTopBar">
       <q-space />
       <q-btn dense flat icon="link" color="white" @click="emits('share')">
-        <q-tooltip>
-          Share
-        </q-tooltip>
+        <q-tooltip> Share </q-tooltip>
       </q-btn>
       <Iframe :query="cypherQuery" />
-      <q-btn dense flat :icon="isFullscreen ? 'fullscreen_exit' : 'fullscreen'" color="white" @click="fullscreenQuery(isFullscreen = !isFullscreen)">
-        <q-tooltip>
-          Fullscreen
-        </q-tooltip>
+      <q-btn
+        dense
+        flat
+        :icon="isFullscreen ? 'fullscreen_exit' : 'fullscreen'"
+        color="white"
+        @click="fullscreenQuery((isFullscreen = !isFullscreen))"
+      >
+        <q-tooltip> Fullscreen </q-tooltip>
       </q-btn>
       <q-btn dense flat icon="close" color="white" @click="emits('clear')">
-        <q-tooltip>
-          Close
-        </q-tooltip>
+        <q-tooltip> Close </q-tooltip>
       </q-btn>
     </q-bar>
     <InputPanel
