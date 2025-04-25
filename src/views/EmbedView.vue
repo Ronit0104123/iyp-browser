@@ -3,7 +3,6 @@ import { ref } from "vue";
 import { useRoute } from "vue-router";
 import OutputPanel from "@/components/OutputPanel.vue";
 
-// http://localhost:5173/embed/MATCH p = (:AS {asn:2497})--(:Name) RETURN p
 const route = useRoute()
 const query = ref(route.params.query)
 </script>

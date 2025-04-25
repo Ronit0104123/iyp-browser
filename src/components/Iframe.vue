@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import hljs from "highlight.js";
 import "highlight.js/scss/vs.scss";
 import { copyToClipboard } from "quasar";
@@ -7,7 +7,11 @@ import { copyToClipboard } from "quasar";
 const props = defineProps(["query"]);
 
 const showIframeDialog = ref(false);
-const iFrameCode = ref(`<iframe src="${window.location.origin}/embed/${props.query}" width="100%" height="500px"></iframe>`)
+const iFrameCode = ref("")
+
+watch(() => props.query, () => {
+  iFrameCode.value = `<iframe src="${window.location.origin}/embed/${props.query}" width="100%" height="500px"></iframe>`
+})
 </script>
 
 <template>
