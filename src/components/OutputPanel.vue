@@ -28,6 +28,8 @@ const columns = ref([]);
 const explanationText = ref("");
 const errorText = ref("");
 const outputPanel = ref();
+const isFullscreen = ref(false);
+const heightBeforeFullscreen = ref("");
 
 const runCypher = async (cypher) => {
   loading.value = true;
@@ -75,6 +77,17 @@ const run = async (queryInput, queryInputType) => {
   }
 };
 
+const fullscreenQuery = (isFullscreen) => {
+  if (isFullscreen) {
+    outputPanel.value.classList.add("fullscreen");
+    heightBeforeFullscreen.value = outputPanel.value.style.height;
+    outputPanel.value.style.height = "100vh";
+  } else {
+    outputPanel.value.classList.remove("fullscreen");
+    outputPanel.value.style.height = heightBeforeFullscreen.value;
+  }
+};
+
 onMounted(() => {
   run(props.query, props.queryTypeInput);
   if (!props.disableResizer) {
@@ -109,9 +122,9 @@ onMounted(() => {
         </q-tooltip>
       </q-btn>
       <Iframe :query="cypherQuery" />
-      <q-btn dense flat icon="crop_square" color="white">
+      <q-btn dense flat :icon="isFullscreen ? 'fullscreen_exit' : 'fullscreen'" color="white" @click="fullscreenQuery(isFullscreen = !isFullscreen)">
         <q-tooltip>
-          Full screen
+          Fullscreen
         </q-tooltip>
       </q-btn>
       <q-btn dense flat icon="close" color="white" @click="emits('clear')">

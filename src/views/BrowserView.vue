@@ -8,6 +8,7 @@ import { useRoute, useRouter } from "vue-router";
 const route = useRoute();
 const router = useRouter();
 const queries = ref(route.query.session ? JSON.parse(route.query.session) : []);
+const outputPanel = ref();
 
 const runQuery = (query, queryType) => {
   const uuid = uid();
@@ -45,6 +46,7 @@ watch(queries, () => {
     <div class="browser-output-container">
       <div v-for="query in queries" :key="query.uuid">
         <OutputPanel
+          ref="outputPanel"
           :query="query.query"
           :query-type-input="query.queryType"
           :disable-input="false"
