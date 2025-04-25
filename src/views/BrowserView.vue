@@ -32,9 +32,9 @@ const pushRoute = () => {
   })
 };
 
-watch(queries.value, () => {
+watch(queries, () => {
   pushRoute();
-});
+}, { deep: true });
 </script>
 
 <template>
