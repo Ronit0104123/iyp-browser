@@ -129,7 +129,7 @@ onMounted(() => {
       <q-btn dense flat icon="link" color="white" @click="emits('share')">
         <q-tooltip>Share</q-tooltip>
       </q-btn>
-      <Iframe :query="cypherQuery" />
+      <Iframe :query="cypherQuery" :query-type="queryType" />
       <q-btn
         dense
         flat

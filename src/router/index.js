@@ -16,7 +16,7 @@ const router = createRouter({
           component: BrowserView,
         },
         {
-          path: "embed/:query",
+          path: "embed",
           name: "embed",
           component: EmbedView,
         },
