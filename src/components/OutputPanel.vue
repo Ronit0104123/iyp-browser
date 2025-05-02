@@ -10,6 +10,7 @@ import Iframe from "@/components/Iframe.vue";
 
 const Neo4jApi = inject("Neo4jApi");
 const LlmApi = inject("LlmApi");
+const GlobalVariables = inject("GlobalVariables");
 
 const emits = defineEmits(["clear", "share", "update"]);
 
@@ -113,7 +114,7 @@ onMounted(() => {
         },
         modifiers: [
           interact.modifiers.restrictSize({
-            min: { height: 540 },
+            min: { height: GlobalVariables.outputPanelHeight },
             max: { height: 800 },
           }),
         ],

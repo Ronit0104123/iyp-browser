@@ -1,14 +1,17 @@
 <script setup>
-import { ref, watch } from "vue";
+import { ref, watch, inject } from "vue";
 import InputPanel from "@/components/InputPanel.vue";
 import OutputPanel from "@/components/OutputPanel.vue";
 import { uid, copyToClipboard } from "quasar";
 import { useRoute, useRouter } from "vue-router";
 
+const GlobalVariables = inject("GlobalVariables");
+
 const route = useRoute();
 const router = useRouter();
 const queries = ref(route.query.session ? JSON.parse(route.query.session) : []);
 const outputPanel = ref();
+const outputPanelHeight = ref(`${GlobalVariables.outputPanelHeight}px`);
 
 const runQuery = (query, queryType) => {
   const uuid = uid();
@@ -78,7 +81,7 @@ watch(
           @clear="clearQuery(query.uuid)"
           @share="shareQuery(query)"
           @update="updateQuery($event, query.uuid)"
-          style="height: 540px"
+          class="output-panel"
         />
       </div>
     </div>
@@ -103,5 +106,8 @@ watch(
   display: flex;
   flex-direction: column-reverse;
   gap: 16px;
+}
+.output-panel {
+  height: v-bind("outputPanelHeight");
 }
 </style>

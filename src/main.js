@@ -3,9 +3,10 @@ import "./assets/main.css";
 import { createApp } from "vue";
 import App from "./App.vue";
 import router from "./router";
-import { Quasar } from "quasar";
+import { Quasar, Notify } from "quasar";
 import { Neo4jApi } from "@/plugins/Neo4jApi";
 import { LlmApi } from "@/plugins/LlmApi";
+import { GlobalVariables } from "@/plugins/GlobalVariables";
 
 import "@quasar/extras/roboto-font/roboto-font.css";
 import "@quasar/extras/material-icons/material-icons.css";
@@ -16,9 +17,12 @@ const app = createApp(App);
 
 app.use(router);
 app.use(Quasar, {
-  plugins: {},
+  plugins: {
+    Notify,
+  },
 });
 app.use(Neo4jApi);
 app.use(LlmApi);
+app.use(GlobalVariables);
 
 app.mount("#app");
