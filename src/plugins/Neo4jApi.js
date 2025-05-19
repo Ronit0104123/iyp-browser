@@ -28,7 +28,7 @@ const Neo4jApi = {
         );
         return {
           graph: nvlResultTransformer(response.data.data.values),
-          table: tableResultTransformer(
+          table: await tableResultTransformer(
             response.data.data.fields,
             response.data.data.values,
           ),
@@ -144,10 +144,12 @@ const Neo4jApi = {
               });
               graphObj.push(properties);
             });
-            returnedRow[columns[countElementsInRow + 1].name] =
-              JSON.stringify(graphObj);
+            returnedRow[columns[countElementsInRow + 1].name] = JSON.stringify(graphObj);
           } else {
             returnedRow[columns[countElementsInRow + 1].name] = value["_value"];
+            if (value["$type"] === "List") {
+              returnedRow[columns[countElementsInRow + 1].name] = value["_value"].map((val) => val["_value"]);
+            }
           }
           countElementsInRow += 1;
           if (countElementsInRow === columns.length - 1) {

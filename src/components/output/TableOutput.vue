@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from "vue";
+import { ref, readonly } from "vue";
 import { exportFile, useQuasar } from "quasar";
 
 const props = defineProps(["rows", "columns"]);
@@ -78,8 +78,8 @@ const exportTable = () => {
   </div>
   <q-table
     flat
-    :rows="props.rows"
-    :columns="props.columns"
+    :rows="rows"
+    :columns="columns"
     :filter="filter"
     row-key="index"
   />
