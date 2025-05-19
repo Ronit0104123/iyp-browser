@@ -1,5 +1,5 @@
 <script setup>
-import { ref, readonly } from "vue";
+import { ref } from "vue";
 import { exportFile, useQuasar } from "quasar";
 
 const props = defineProps(["rows", "columns"]);
