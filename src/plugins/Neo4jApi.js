@@ -2,7 +2,7 @@ import axios from "axios";
 import randomColor from "randomcolor";
 
 /// Base url for neo4j api
-const NEO4J_API_BASE = "https://iyp.iijlab.net/iyp/db/neo4j/tx/";
+const NEO4J_API_BASE = "https://iyp.iijlab.net/iyp/db/neo4j/query/v2";
 /// Default timeout before api call are considered failed
 const DEFAULT_TIMEOUT = 180000;
 
@@ -14,26 +14,30 @@ const Neo4jApi = {
     });
 
     const run = async (query) => {
-      let response = await axios_base.post("", {
-        statements: [
+      try {
+        let response = await axios_base.post(
+          "",
           {
             statement: query,
-            resultDataContents: ["row", "graph"],
           },
-        ],
-      });
-      if (response.data.errors.length) {
+          {
+            headers: {
+              Accept: "application/vnd.neo4j.query",
+            },
+          },
+        );
         return {
-          error: response.data.errors[0].message,
+          graph: nvlResultTransformer(response.data.data.values),
+          table: tableResultTransformer(
+            response.data.data.fields,
+            response.data.data.values,
+          ),
+        };
+      } catch (error) {
+        return {
+          error: error.response.data.errors[0].message,
         };
       }
-      return {
-        graph: nvlResultTransformer(response.data.results[0].data),
-        table: tableResultTransformer(
-          response.data.results[0].columns,
-          response.data.results[0].data,
-        ),
-      };
     };
 
     const nvlResultTransformer = (results) => {
@@ -41,17 +45,20 @@ const Neo4jApi = {
       const nodes = [];
       const relationships = [];
       results.forEach((row) => {
-        if (row["graph"] !== undefined) {
-          row["graph"].nodes.forEach((node) => {
-            node = nvlResultTransformerNode(node, colorMap);
-            if (nodes.indexOf(node) === -1) {
-              nodes.push(node);
-            }
-          });
-          row["graph"].relationships.forEach((relationship) => {
-            relationship = nvlResultTransformerRelationship(relationship);
-            if (relationships.indexOf(relationship) === -1) {
-              relationships.push(relationship);
+        if (row["$type"] === "Path") {
+          row["_value"].forEach((path) => {
+            if (path["$type"] === "Node") {
+              const node = nvlResultTransformerNode(path["_value"], colorMap);
+              if (nodes.indexOf(node) === -1) {
+                nodes.push(node);
+              }
+            } else if (path["$type"] === "Relationship") {
+              const relationship = nvlResultTransformerRelationship(
+                path["_value"],
+              );
+              if (relationships.indexOf(relationship) === -1) {
+                relationships.push(relationship);
+              }
             }
           });
         }
@@ -60,15 +67,26 @@ const Neo4jApi = {
     };
 
     const nvlResultTransformerNode = (node, colorMap) => {
-      const nodeType = node.labels[0];
+      const nodeType = node["_labels"][0];
       if (!colorMap.has(nodeType)) {
         colorMap.set(nodeType, randomColor());
       }
+      const properties = {};
+      Object.keys(node["_properties"]).forEach((value) => {
+        properties[value] = node["_properties"][value]["_value"];
+        if (node["_properties"][value]["$type"] === "List") {
+          properties[value] = node["_properties"][value]["_value"].map(
+            (val) => val["_value"],
+          );
+        }
+      });
       return {
-        id: node.id,
-        caption: String(node.properties[Object.keys(node.properties)[0]]),
+        id: node["_element_id"],
+        caption: String(
+          node["_properties"][Object.keys(node["_properties"])[0]]["_value"],
+        ),
         color: colorMap.get(nodeType),
-        properties: node.properties,
+        properties: properties,
         nodeOrRelationship: "node",
         selected: false,
         type: nodeType,
@@ -76,15 +94,24 @@ const Neo4jApi = {
     };
 
     const nvlResultTransformerRelationship = (relationship) => {
+      const properties = {};
+      Object.keys(relationship["_properties"]).forEach((value) => {
+        properties[value] = relationship["_properties"][value]["_value"];
+        if (relationship["_properties"][value]["$type"] === "List") {
+          properties[value] = relationship["_properties"][value]["_value"].map(
+            (val) => val["_value"],
+          );
+        }
+      });
       return {
-        id: relationship.elementId,
-        from: relationship.startNode,
-        to: relationship.endNode,
-        caption: relationship.type,
-        properties: relationship.properties,
+        id: relationship["_element_id"],
+        from: relationship["_start_node_element_id"],
+        to: relationship["_end_node_element_id"],
+        caption: relationship["_type"],
+        properties: properties,
         nodeOrRelationship: "relationship",
         selected: false,
-        type: relationship.type,
+        type: relationship["_type"],
       };
     };
 
@@ -92,14 +119,39 @@ const Neo4jApi = {
       const rows = [];
       const columns = tableResultTransformerColumn(header);
       if (columns.length) {
-        results.forEach((row, rowIndex) => {
-          if (row["row"] !== undefined) {
-            const returnedRow = {
-              index: rowIndex + 1,
+        let countElementsInRow = 0;
+        let returnedRow = {
+          index: 0,
+        };
+        results.forEach((value) => {
+          if (countElementsInRow === 0) {
+            returnedRow = {
+              index: returnedRow.index + 1,
             };
-            row["row"].forEach((val, valIndex) => {
-              returnedRow[columns[valIndex + 1].name] = JSON.stringify(val);
+          }
+          if (value["$type"] === "Path") {
+            const graphObj = [];
+            value["_value"].forEach((path) => {
+              const properties = {};
+              Object.keys(path["_value"]["_properties"]).forEach((prop) => {
+                properties[prop] =
+                  path["_value"]["_properties"][prop]["_value"];
+                if (path["_value"]["_properties"][prop]["$type"] === "List") {
+                  properties[prop] = path["_value"]["_properties"][prop][
+                    "_value"
+                  ].map((val) => val["_value"]);
+                }
+              });
+              graphObj.push(properties);
             });
+            returnedRow[columns[countElementsInRow + 1].name] =
+              JSON.stringify(graphObj);
+          } else {
+            returnedRow[columns[countElementsInRow + 1].name] = value["_value"];
+          }
+          countElementsInRow += 1;
+          if (countElementsInRow === columns.length - 1) {
+            countElementsInRow = 0;
             rows.push(returnedRow);
           }
         });
