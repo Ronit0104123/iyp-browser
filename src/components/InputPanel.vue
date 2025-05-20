@@ -1,9 +1,11 @@
 <script setup>
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted, watch, inject } from "vue";
 import * as monaco from "monaco-editor";
 import schema from "@/assets/neo4j-schema.json";
 import { autocomplete } from "@neo4j-cypher/language-support";
 import Feedback from "./Feedback.vue";
+
+const GlobalVariables = inject("GlobalVariables");
 
 const emits = defineEmits(["run", "clear"]);
 
@@ -133,8 +135,17 @@ onMounted(() => {
 <template>
   <div class="input-container row">
     <q-tabs v-model="tab" class="input-language-switcher" vertical dense>
-      <q-tab name="cypher" label="Cypher" />
-      <q-tab name="text" label="Text" disable>
+      <q-tab
+        v-if="!GlobalVariables.disableCypherInput"
+        name="cypher"
+        label="Cypher"
+      />
+      <q-tab
+        v-if="!GlobalVariables.disableTextInput"
+        name="text"
+        label="Text"
+        disable
+      >
         <q-badge>Coming Soon</q-badge>
       </q-tab>
     </q-tabs>
