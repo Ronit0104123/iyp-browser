@@ -2,7 +2,8 @@ import axios from "axios";
 import randomColor from "randomcolor";
 
 /// Base url for neo4j api
-const NEO4J_API_BASE = "https://iyp.iijlab.net/iyp/db/neo4j/query/v2";
+// const NEO4J_API_BASE = "https://iyp.iijlab.net/iyp/db/neo4j/query/v2";
+const NEO4J_API_BASE = "http://iyp-bolt.ihr.live:7474/db/neo4j/query/v2";
 /// Default timeout before api call are considered failed
 const DEFAULT_TIMEOUT = 180000;
 
@@ -28,7 +29,7 @@ const Neo4jApi = {
         );
         return {
           graph: nvlResultTransformer(response.data.data.values),
-          table: await tableResultTransformer(
+          table: tableResultTransformer(
             response.data.data.fields,
             response.data.data.values,
           ),
@@ -45,23 +46,25 @@ const Neo4jApi = {
       const nodes = [];
       const relationships = [];
       results.forEach((row) => {
-        if (row["$type"] === "Path") {
-          row["_value"].forEach((path) => {
-            if (path["$type"] === "Node") {
-              const node = nvlResultTransformerNode(path["_value"], colorMap);
-              if (nodes.indexOf(node) === -1) {
-                nodes.push(node);
+        row.forEach((val) => {
+          if (val["$type"] === "Path") {
+            val["_value"].forEach((path) => {
+              if (path["$type"] === "Node") {
+                const node = nvlResultTransformerNode(path["_value"], colorMap);
+                if (nodes.indexOf(node) === -1) {
+                  nodes.push(node);
+                }
+              } else if (path["$type"] === "Relationship") {
+                const relationship = nvlResultTransformerRelationship(
+                  path["_value"],
+                );
+                if (relationships.indexOf(relationship) === -1) {
+                  relationships.push(relationship);
+                }
               }
-            } else if (path["$type"] === "Relationship") {
-              const relationship = nvlResultTransformerRelationship(
-                path["_value"],
-              );
-              if (relationships.indexOf(relationship) === -1) {
-                relationships.push(relationship);
-              }
-            }
-          });
-        }
+            });
+          }
+        });
       });
       return { nodes, relationships };
     };
@@ -123,41 +126,44 @@ const Neo4jApi = {
         let returnedRow = {
           index: 0,
         };
-        results.forEach((value) => {
-          if (countElementsInRow === 0) {
-            returnedRow = {
-              index: returnedRow.index + 1,
-            };
-          }
-          if (value["$type"] === "Path") {
-            const graphObj = [];
-            value["_value"].forEach((path) => {
-              const properties = {};
-              Object.keys(path["_value"]["_properties"]).forEach((prop) => {
-                properties[prop] =
-                  path["_value"]["_properties"][prop]["_value"];
-                if (path["_value"]["_properties"][prop]["$type"] === "List") {
-                  properties[prop] = path["_value"]["_properties"][prop][
-                    "_value"
-                  ].map((val) => val["_value"]);
-                }
-              });
-              graphObj.push(properties);
-            });
-            returnedRow[columns[countElementsInRow + 1].name] =
-              JSON.stringify(graphObj);
-          } else {
-            returnedRow[columns[countElementsInRow + 1].name] = value["_value"];
-            if (value["$type"] === "List") {
-              returnedRow[columns[countElementsInRow + 1].name] =
-                JSON.stringify(value["_value"].map((val) => val["_value"]));
+        results.forEach((row) => {
+          row.forEach((value) => {
+            if (countElementsInRow === 0) {
+              returnedRow = {
+                index: returnedRow.index + 1,
+              };
             }
-          }
-          countElementsInRow += 1;
-          if (countElementsInRow === columns.length - 1) {
-            countElementsInRow = 0;
-            rows.push(returnedRow);
-          }
+            if (value["$type"] === "Path") {
+              const graphObj = [];
+              value["_value"].forEach((path) => {
+                const properties = {};
+                Object.keys(path["_value"]["_properties"]).forEach((prop) => {
+                  properties[prop] =
+                    path["_value"]["_properties"][prop]["_value"];
+                  if (path["_value"]["_properties"][prop]["$type"] === "List") {
+                    properties[prop] = path["_value"]["_properties"][prop][
+                      "_value"
+                    ].map((val) => val["_value"]);
+                  }
+                });
+                graphObj.push(properties);
+              });
+              returnedRow[columns[countElementsInRow + 1].name] =
+                JSON.stringify(graphObj);
+            } else {
+              returnedRow[columns[countElementsInRow + 1].name] =
+                value["_value"];
+              if (value["$type"] === "List") {
+                returnedRow[columns[countElementsInRow + 1].name] =
+                  JSON.stringify(value["_value"].map((val) => val["_value"]));
+              }
+            }
+            countElementsInRow += 1;
+            if (countElementsInRow === columns.length - 1) {
+              countElementsInRow = 0;
+              rows.push(returnedRow);
+            }
+          });
         });
       }
       return { rows, columns };
