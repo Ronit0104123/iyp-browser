@@ -3,7 +3,7 @@ import randomColor from "randomcolor";
 
 /// Base url for neo4j api
 // const NEO4J_API_BASE = "https://iyp.iijlab.net/iyp/db/neo4j/query/v2";
-const NEO4J_API_BASE = "http://iyp-bolt.ihr.live:7474/db/neo4j/query/v2";
+const NEO4J_API_BASE = "https://iyp-dev.ihr.live/db/neo4j/query/v2";
 /// Default timeout before api call are considered failed
 const DEFAULT_TIMEOUT = 180000;
 
