@@ -46,9 +46,9 @@ const Neo4jApi = {
       const nodes = [];
       const relationships = [];
       results.forEach((row) => {
-        row.forEach((val) => {
-          if (val["$type"] === "Path") {
-            val["_value"].forEach((path) => {
+        row.forEach((value) => {
+          if (value["$type"] === "Path") {
+            value["_value"].forEach((path) => {
               if (path["$type"] === "Node") {
                 const node = nvlResultTransformerNode(path["_value"], colorMap);
                 if (nodes.indexOf(node) === -1) {
@@ -63,6 +63,12 @@ const Neo4jApi = {
                 }
               }
             });
+          }
+          if (value["$type"] === "Node") {
+            const node = nvlResultTransformerNode(value["_value"], colorMap);
+            if (nodes.indexOf(node) === -1) {
+              nodes.push(node);
+            }
           }
         });
       });
@@ -156,6 +162,17 @@ const Neo4jApi = {
               if (value["$type"] === "List") {
                 returnedRow[columns[countElementsInRow + 1].name] =
                   JSON.stringify(value["_value"].map((val) => val["_value"]));
+              } else if (
+                value["$type"] === "Node" ||
+                value["$type"] === "Relationship"
+              ) {
+                const properties = {};
+                Object.keys(value["_value"]["_properties"]).forEach((prop) => {
+                  properties[prop] =
+                    value["_value"]["_properties"][prop]["_value"];
+                });
+                returnedRow[columns[countElementsInRow + 1].name] =
+                  JSON.stringify(properties);
               }
             }
             countElementsInRow += 1;
