@@ -110,7 +110,18 @@ onMounted(() => {
         endLineNumber: position.lineNumber,
         endColumn: position.column,
       });
-      const completionItems = autocomplete(textUtilPosition, schema);
+      const autocompleteSchema = {
+        labels: Object.keys(schema.node_properties),
+        relationshipTypes: Object.keys(schema.relationship_properties),
+        propertyKeys: [
+          ...Object.values(schema.node_properties).flat(),
+          ...Object.values(schema.relationship_properties).flat(),
+        ],
+      };
+      const completionItems = autocomplete(
+        textUtilPosition,
+        autocompleteSchema,
+      );
       return {
         suggestions: completionItems.map((item) => ({
           label: item.label,
