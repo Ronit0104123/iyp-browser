@@ -30,7 +30,7 @@ const updateEditorHeight = () => {
   const lineCount = editor.getModel().getLineCount();
   const newHeight = Math.min (
     Math.max(lineCount * lineHeight, minHeight * lineHeight), maxHeight * lineHeight
-  )+ padding;
+  )+ padding * 2;
   code.value.style.height = `${newHeight}px`;
   if(lineCount<maxHeight){
     emits('editorHeightChanged', newHeight);
@@ -110,7 +110,8 @@ onMounted(() => {
     automaticLayout: true,
     contextmenu: false,
     scrollBeyondLastLine: false,
-    lineHeight: lineHeight
+    lineHeight: lineHeight,
+    padding: { top:10, bottom: 10 }
   });
 
   let previousLineCount = editor.getModel().getLineCount();
@@ -212,8 +213,8 @@ onMounted(() => {
 <style scoped>
 .input-container {
   width: 100%;
-  min-height: v-bind("minHeight * lineHeight + padding + 'px'");
-  max-height: v-bind("maxHeight * lineHeight + padding + 'px'");
+  min-height: v-bind("minHeight * lineHeight + padding * 2 + 'px'");
+  max-height: v-bind("maxHeight * lineHeight + padding * 2 + 'px'");
   padding-top: 4px;
   padding-bottom: 4px;
   background-color: #f9fcff;
@@ -223,7 +224,7 @@ onMounted(() => {
 }
 .code {
   width: 100%;
-  height: v-bind("minHeight * lineHeight + padding + 'px'");
+  height: v-bind("minHeight * lineHeight + padding * 2 + 'px'");
   background-color: #ffffff;
   border: 1px solid #e0e0e0;
   border-radius: 4px;

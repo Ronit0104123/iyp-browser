@@ -162,7 +162,7 @@ onMounted(() => {
       @clear="emits('clear')"
       @editorHeightChanged="handleEditorHeightChange"
     />
-    <q-skeleton v-if="loading" width="100%" height="100%" animation="wave" />
+    <q-skeleton v-if="loading" class="output-skeleton" animation="wave" />
     <div v-else class="output-container">
       <q-splitter v-model="splitter" disable unit="px" class="output-tabs">
         <template v-slot:before>
@@ -304,5 +304,10 @@ a {
   background-color: #263238;
   border-top-left-radius: 4px;
   border-top-right-radius: 4px;
+}
+.output-skeleton {
+  flex: 1; 
+  width: 100%;
+  height: 100%;  
 }
 </style>
