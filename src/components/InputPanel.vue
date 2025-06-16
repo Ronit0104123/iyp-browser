@@ -32,9 +32,7 @@ const updateEditorHeight = () => {
     Math.max(lineCount * lineHeight, minHeight * lineHeight), maxHeight * lineHeight
   )+ padding * 2;
   code.value.style.height = `${newHeight}px`;
-  if(lineCount<maxHeight){
-    emits('editorHeightChanged', newHeight);
-  }
+  emits('editorHeightChanged', newHeight);
   editor.layout();
 };
 
