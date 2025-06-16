@@ -213,8 +213,6 @@ onMounted(() => {
 <style scoped>
 .input-container {
   width: 100%;
-  min-height: v-bind("minHeight * lineHeight + padding * 2 + 'px'");
-  max-height: v-bind("maxHeight * lineHeight + padding * 2 + 'px'");
   padding-top: 4px;
   padding-bottom: 4px;
   background-color: #f9fcff;
