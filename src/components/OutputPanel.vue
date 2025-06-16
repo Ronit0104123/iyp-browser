@@ -306,8 +306,8 @@ a {
   border-top-right-radius: 4px;
 }
 .output-skeleton {
-  flex: 1; 
+  flex: 1;
   width: 100%;
-  height: 100%;  
+  height: 100%;
 }
 </style>

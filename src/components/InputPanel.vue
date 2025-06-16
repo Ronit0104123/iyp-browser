@@ -28,11 +28,14 @@ const padding = 10;
 
 const updateEditorHeight = () => {
   const lineCount = editor.getModel().getLineCount();
-  const newHeight = Math.min (
-    Math.max(lineCount * lineHeight, minHeight * lineHeight), maxHeight * lineHeight
-  )+ padding * 2;
+  const newHeight =
+    Math.min(
+      Math.max(lineCount * lineHeight, minHeight * lineHeight),
+      maxHeight * lineHeight,
+    ) +
+    padding * 2;
   code.value.style.height = `${newHeight}px`;
-  emits('editorHeightChanged', newHeight);
+  emits("editorHeightChanged", newHeight);
   editor.layout();
 };
 
@@ -109,7 +112,7 @@ onMounted(() => {
     contextmenu: false,
     scrollBeyondLastLine: false,
     lineHeight: lineHeight,
-    padding: { top:10, bottom: 10 }
+    padding: { top: 10, bottom: 10 },
   });
 
   let previousLineCount = editor.getModel().getLineCount();
@@ -117,8 +120,8 @@ onMounted(() => {
   editor.onDidChangeModelContent(() => {
     const currentLineCount = editor.getModel().getLineCount();
     if (currentLineCount !== previousLineCount) {
-        previousLineCount = currentLineCount;
-        updateEditorHeight();
+      previousLineCount = currentLineCount;
+      updateEditorHeight();
     }
   });
 
