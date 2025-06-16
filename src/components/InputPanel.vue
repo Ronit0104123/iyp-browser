@@ -163,7 +163,7 @@ onMounted(() => {
   editor.addAction({
     id: "run",
     label: "Run",
-    keybindings: [monaco.KeyMod.Shift | monaco.KeyCode.Enter],
+    keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter],
     run: () => {
       runQuery();
     },
