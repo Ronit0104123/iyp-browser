@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch, inject } from "vue";
+import { ref, onMounted, onBeforeUnmount, watch, inject } from "vue";
 import * as monaco from "monaco-editor";
 import schema from "@/assets/neo4j-schema.json";
 import { autocomplete } from "@neo4j-cypher/language-support";
@@ -25,6 +25,8 @@ const minHeight = 3;
 const maxHeight = 10;
 const lineHeight = 20;
 const padding = 10;
+let providerDisposable = null;
+const PROVIDER_FLAG = "__cypherProviderAdded";
 
 const updateEditorHeight = () => {
   const lineCount = editor.getModel().getLineCount();
@@ -133,36 +135,68 @@ onMounted(() => {
     extensions: [".cypher"],
     aliases: ["Cypher", "cypher"],
   });
-  monaco.languages.registerCompletionItemProvider("cypher", {
-    provideCompletionItems: (model, position) => {
-      const textUtilPosition = model.getValueInRange({
-        startLineNumber: 1,
-        startColumn: 1,
-        endLineNumber: position.lineNumber,
-        endColumn: position.column,
-      });
-      const autocompleteSchema = {
-        labels: Object.keys(schema.node_properties),
-        relationshipTypes: Object.keys(schema.relationship_properties),
-        propertyKeys: [
-          ...Object.values(schema.node_properties).flat(),
-          ...Object.values(schema.relationship_properties).flat(),
-        ],
-      };
-      const completionItems = autocomplete(
-        textUtilPosition,
-        autocompleteSchema,
-      );
-      return {
-        suggestions: completionItems.map((item) => ({
-          label: item.label,
-          kind: item.kind,
-          insertText: item.label,
-          range: item.range,
-        })),
-      };
-    },
-  });
+  if(!window[PROVIDER_FLAG]){
+    providerDisposable = monaco.languages.registerCompletionItemProvider("cypher", {
+      triggerCharacters: [":", ")", "-", "[", "]", ">", "<", "{", "}", "."],
+      provideCompletionItems: (model, position) => {
+        const textUtilPosition = model.getValueInRange({
+          startLineNumber: 1,
+          startColumn: 1,
+          endLineNumber: position.lineNumber,
+          endColumn: position.column,
+        });
+
+        const matchNode = textUtilPosition.match(/:\s*([A-Za-z0-9_]+)(?=[\s)\-\[\{]|$)/);
+        const matchRel = textUtilPosition.match (/\[\s*\w*\s*:\s*([A-Za-z0-9_]+)(?=[\s\]\-]|$)/);
+        const nodePropMatch = textUtilPosition.match(
+          /(?:\(\s*\w*\s*:\s*[A-Za-z0-9_]+\s*\{\s*([A-Za-z0-9_]*))|\b([A-Za-z][A-Za-z0-9_]*)\.\s*([A-Za-z0-9_]*)$/
+        );
+        const relPropMatch = textUtilPosition.match(
+          /\[\s*\w*\s*:\s*[A-Za-z0-9_]+\s*\{\s*([A-Za-z0-9_]*)$/
+        );
+
+        let relationships = [];
+        let targetNodes = [];
+        let properties = [];
+
+        if(matchNode){
+          relationships = Object.keys( schema.schema[matchNode[1]] || {} );
+        }
+        if(matchRel && matchNode){
+          targetNodes = schema.schema[matchNode[1]][matchRel[1]] || []; 
+        }
+        if(matchNode && nodePropMatch){
+          properties = schema.node_properties[matchNode[1]] || [];
+        }
+        if(matchRel && relPropMatch){
+          properties = schema.relationship_properties[matchRel[1]] || [];
+        }
+
+        const autocompleteSchema = {
+          labels: targetNodes.length > 0 ? targetNodes : Object.keys(schema.node_properties),
+          relationshipTypes: relationships.length > 0 ? relationships : Object.keys(schema.relationship_properties),
+          propertyKeys: properties.length > 0 ? properties : [
+            ...Object.values(schema.node_properties).flat(),
+            ...Object.values(schema.relationship_properties).flat(),
+          ],
+        };
+      
+        const completionItems = autocomplete(
+          textUtilPosition,
+          autocompleteSchema,
+        );
+        return {
+          suggestions: completionItems.map((item) => ({
+            label: item.label,
+            kind: monaco.languages.CompletionItemKind.Text,
+            insertText: item.label,
+            range: item.range,
+          })),
+        };
+      },
+    });
+  window[PROVIDER_FLAG] = true;
+  };
   editor.addAction({
     id: "run",
     label: "Run",
@@ -171,6 +205,10 @@ onMounted(() => {
       runQuery();
     },
   });
+});
+onBeforeUnmount(() => {
+  editor?.dispose();
+  providerDisposable?.dispose();
 });
 </script>
 
