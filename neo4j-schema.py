@@ -177,3 +177,33 @@ if __name__ == "__main__":
     DATABASE = "neo4j"
 
     db = Neo4jDB(URI, USER, PASSWORD, DATABASE)
+
+# TODO:
+# - update the deprecated function
+# - remove duplicates from schema
+# - add underected schema version
+#
+# sample code:
+# import json
+#
+# schema = json.load(open("/home/dimitrios/dimitrios/neo4j-schema.json", "r"))
+#
+# undericted_schema = {}
+# for node_A in schema["schema"]:
+#     if node_A not in undericted_schema:
+#         undericted_schema[node_A] = {}
+#     for relationship in schema["schema"][node_A]:
+#         if relationship not in undericted_schema[node_A]:
+#             undericted_schema[node_A][relationship] = []
+#         for node_B in schema["schema"][node_A][relationship]:
+#             if node_B not in undericted_schema[node_A][relationship]:
+#                 undericted_schema[node_A][relationship].append(node_B)
+#             if node_B not in undericted_schema:
+#                 undericted_schema[node_B] = {}
+#             if relationship not in undericted_schema[node_B]:
+#                 undericted_schema[node_B][relationship] = []
+#             if node_A not in undericted_schema[node_B][relationship]:
+#                 undericted_schema[node_B][relationship].append(node_A)
+#
+# schema["schema"] = undericted_schema
+# json.dump(schema, open("/home/dimitrios/dimitrios/neo4j-schema-fix.json", "w"))
