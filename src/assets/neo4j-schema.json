@@ -1008,12 +1008,45 @@
   },
   "schema": {
     "AtlasMeasurement": {
-      "TARGET": ["Resolver", "IP", "AS", "AuthoritativeNameServer", "HostName"]
+      "TARGET": ["Resolver", "IP", "AS", "AuthoritativeNameServer", "HostName"],
+      "PART_OF": ["AtlasProbe"]
     },
-    "Country": { "POPULATION": ["Estimate"] },
+    "Resolver": {
+      "TARGET": ["AtlasMeasurement"],
+      "RESOLVES_TO": ["HostName", "AuthoritativeNameServer"],
+      "ASSIGNED": ["AtlasProbe"],
+      "PART_OF": [
+        "URL",
+        "Prefix",
+        "BGPPrefix",
+        "RIRPrefix",
+        "PeeringLAN",
+        "GeoPrefix",
+        "RPKIPrefix",
+        "RDNSPrefix"
+      ]
+    },
+    "IP": {
+      "TARGET": ["AtlasMeasurement"],
+      "CENSORED": ["AS"],
+      "RESOLVES_TO": ["HostName", "AuthoritativeNameServer"],
+      "ASSIGNED": ["AtlasProbe"],
+      "PART_OF": [
+        "URL",
+        "Prefix",
+        "BGPPrefix",
+        "RIRPrefix",
+        "PeeringLAN",
+        "GeoPrefix",
+        "RPKIPrefix",
+        "RDNSPrefix"
+      ],
+      "CATEGORIZED": ["Tag"]
+    },
     "AS": {
+      "TARGET": ["AtlasMeasurement"],
       "POPULATION": ["Country"],
-      "LOCATED_IN": ["Facility", "Point"],
+      "LOCATED_IN": ["Facility", "Point", "AtlasProbe"],
       "MEMBER_OF": ["IXP"],
       "RANK": ["Ranking"],
       "MANAGED_BY": ["Organization"],
@@ -1031,7 +1064,16 @@
       "EXTERNAL_ID": ["PeeringdbNetID"],
       "ASSIGNED": ["OpaqueID"],
       "CENSORED": ["IP", "URL", "Tag"],
-      "DEPENDS_ON": ["AS"],
+      "DEPENDS_ON": [
+        "AS",
+        "GeoPrefix",
+        "BGPPrefix",
+        "Prefix",
+        "RPKIPrefix",
+        "RDNSPrefix",
+        "PeeringLAN",
+        "RIRPrefix"
+      ],
       "RESERVED": ["OpaqueID"],
       "SIBLING_OF": ["AS"],
       "NAME": ["Name"],
@@ -1046,17 +1088,96 @@
         "RDNSPrefix"
       ],
       "CATEGORIZED": ["Tag"],
-      "WEBSITE": ["URL"]
+      "WEBSITE": ["URL"],
+      "QUERIED_FROM": ["DomainName"]
     },
+    "AuthoritativeNameServer": {
+      "TARGET": ["AtlasMeasurement"],
+      "MANAGED_BY": [
+        "DomainName",
+        "GeoPrefix",
+        "BGPPrefix",
+        "Prefix",
+        "RPKIPrefix",
+        "RDNSPrefix",
+        "PeeringLAN",
+        "RIRPrefix"
+      ],
+      "ALIAS_OF": ["HostName", "AuthoritativeNameServer"],
+      "RANK": ["Ranking"],
+      "PART_OF": ["DomainName", "URL"],
+      "RESOLVES_TO": ["IP", "Resolver"]
+    },
+    "HostName": {
+      "TARGET": ["AtlasMeasurement"],
+      "MANAGED_BY": [
+        "DomainName",
+        "GeoPrefix",
+        "BGPPrefix",
+        "Prefix",
+        "RPKIPrefix",
+        "RDNSPrefix",
+        "PeeringLAN",
+        "RIRPrefix"
+      ],
+      "RANK": ["Ranking"],
+      "ALIAS_OF": ["AuthoritativeNameServer", "HostName"],
+      "PART_OF": ["DomainName", "URL"],
+      "RESOLVES_TO": ["IP", "Resolver"]
+    },
+    "Country": {
+      "POPULATION": ["Estimate", "AS"],
+      "COUNTRY": [
+        "AS",
+        "Facility",
+        "Organization",
+        "AtlasProbe",
+        "IXP",
+        "GeoPrefix",
+        "BGPPrefix",
+        "Prefix",
+        "RPKIPrefix",
+        "RDNSPrefix",
+        "PeeringLAN",
+        "RIRPrefix",
+        "Ranking"
+      ],
+      "QUERIED_FROM": ["DomainName"]
+    },
+    "Estimate": { "POPULATION": ["Country"] },
     "Facility": {
-      "LOCATED_IN": ["Point"],
+      "LOCATED_IN": ["AS", "Point", "IXP"],
       "MANAGED_BY": ["Organization"],
       "COUNTRY": ["Country"],
       "EXTERNAL_ID": ["PeeringdbFacID"],
       "NAME": ["Name"],
       "WEBSITE": ["URL"]
     },
+    "Point": { "LOCATED_IN": ["AS", "Facility", "Organization", "AtlasProbe"] },
+    "IXP": {
+      "MEMBER_OF": ["AS"],
+      "LOCATED_IN": ["Facility"],
+      "MANAGED_BY": [
+        "Organization",
+        "GeoPrefix",
+        "BGPPrefix",
+        "Prefix",
+        "RPKIPrefix",
+        "RDNSPrefix",
+        "PeeringLAN",
+        "RIRPrefix"
+      ],
+      "COUNTRY": ["Country"],
+      "EXTERNAL_ID": ["CaidaIXID", "PeeringdbIXID"],
+      "NAME": ["Name"],
+      "WEBSITE": ["URL"]
+    },
+    "Ranking": {
+      "RANK": ["AS", "DomainName", "HostName", "AuthoritativeNameServer"],
+      "COUNTRY": ["Country"]
+    },
     "Organization": {
+      "MANAGED_BY": ["AS", "Facility", "IXP"],
       "LOCATED_IN": ["Point"],
       "COUNTRY": ["Country"],
       "EXTERNAL_ID": ["PeeringdbOrgID", "CaidaOrgID"],
@@ -1064,73 +1185,96 @@
       "NAME": ["Name"],
       "WEBSITE": ["URL"]
     },
-    "AtlasProbe": {
-      "LOCATED_IN": ["AS", "Point"],
-      "COUNTRY": ["Country"],
-      "PART_OF": ["AtlasMeasurement"]
-    },
-    "IXP": {
-      "LOCATED_IN": ["Facility"],
-      "MANAGED_BY": ["Organization"],
-      "COUNTRY": ["Country"],
-      "EXTERNAL_ID": ["CaidaIXID", "PeeringdbIXID"],
-      "NAME": ["Name"],
-      "WEBSITE": ["URL"]
-    },
-    "DomainName": {
-      "RANK": ["Ranking"],
-      "MANAGED_BY": ["AuthoritativeNameServer", "HostName"],
-      "PARENT": ["DomainName"],
-      "QUERIED_FROM": ["AS", "Country"]
-    },
-    "HostName": {
-      "RANK": ["Ranking"],
-      "ALIAS_OF": ["AuthoritativeNameServer", "HostName"],
-      "PART_OF": ["DomainName"],
-      "RESOLVES_TO": ["IP", "Resolver"]
-    },
-    "AuthoritativeNameServer": {
-      "RANK": ["Ranking"],
-      "ALIAS_OF": ["AuthoritativeNameServer", "HostName"],
-      "PART_OF": ["DomainName"],
-      "RESOLVES_TO": ["IP", "Resolver"]
-    },
-    "GeoPrefix": {
+    "BGPCollector": { "PEERS_WITH": ["AS"] },
+    "Prefix": {
+      "ROUTE_ORIGIN_AUTHORIZATION": ["AS"],
+      "ORIGINATE": ["AS"],
+      "PART_OF": [
+        "GeoPrefix",
+        "BGPPrefix",
+        "Prefix",
+        "RIRPrefix",
+        "PeeringLAN",
+        "RPKIPrefix",
+        "RDNSPrefix",
+        "IP",
+        "Resolver"
+      ],
       "MANAGED_BY": ["IXP", "AuthoritativeNameServer", "HostName"],
       "COUNTRY": ["Country"],
       "ASSIGNED": ["OpaqueID"],
       "DEPENDS_ON": ["AS"],
       "RESERVED": ["OpaqueID"],
-      "PART_OF": [
-        "Prefix",
-        "BGPPrefix",
-        "RIRPrefix",
-        "PeeringLAN",
-        "RPKIPrefix",
-        "RDNSPrefix"
-      ],
       "AVAILABLE": ["OpaqueID"],
       "CATEGORIZED": ["Tag"]
     },
     "BGPPrefix": {
+      "ROUTE_ORIGIN_AUTHORIZATION": ["AS"],
+      "ORIGINATE": ["AS"],
+      "PART_OF": [
+        "GeoPrefix",
+        "Prefix",
+        "RIRPrefix",
+        "BGPPrefix",
+        "PeeringLAN",
+        "RPKIPrefix",
+        "RDNSPrefix",
+        "IP",
+        "Resolver"
+      ],
       "MANAGED_BY": ["IXP", "AuthoritativeNameServer", "HostName"],
       "COUNTRY": ["Country"],
       "ASSIGNED": ["OpaqueID"],
       "DEPENDS_ON": ["AS"],
       "RESERVED": ["OpaqueID"],
-      "PART_OF": [
-        "Prefix",
-        "RIRPrefix",
-        "BGPPrefix",
-        "PeeringLAN",
-        "GeoPrefix",
-        "RPKIPrefix",
-        "RDNSPrefix"
-      ],
       "AVAILABLE": ["OpaqueID"],
       "CATEGORIZED": ["Tag"]
     },
-    "Prefix": {
+    "RIRPrefix": {
+      "ROUTE_ORIGIN_AUTHORIZATION": ["AS"],
+      "ORIGINATE": ["AS"],
+      "PART_OF": [
+        "GeoPrefix",
+        "BGPPrefix",
+        "Prefix",
+        "RPKIPrefix",
+        "RDNSPrefix",
+        "PeeringLAN",
+        "IP",
+        "Resolver"
+      ],
+      "MANAGED_BY": ["IXP", "AuthoritativeNameServer", "HostName"],
+      "COUNTRY": ["Country"],
+      "ASSIGNED": ["OpaqueID"],
+      "DEPENDS_ON": ["AS"],
+      "RESERVED": ["OpaqueID"],
+      "AVAILABLE": ["OpaqueID"],
+      "CATEGORIZED": ["Tag"]
+    },
+    "PeeringLAN": {
+      "ROUTE_ORIGIN_AUTHORIZATION": ["AS"],
+      "ORIGINATE": ["AS"],
+      "PART_OF": [
+        "GeoPrefix",
+        "BGPPrefix",
+        "Prefix",
+        "RPKIPrefix",
+        "RDNSPrefix",
+        "RIRPrefix",
+        "PeeringLAN",
+        "IP",
+        "Resolver"
+      ],
+      "MANAGED_BY": ["IXP", "AuthoritativeNameServer", "HostName"],
+      "COUNTRY": ["Country"],
+      "ASSIGNED": ["OpaqueID"],
+      "DEPENDS_ON": ["AS"],
+      "RESERVED": ["OpaqueID"],
+      "CATEGORIZED": ["Tag"]
+    },
+    "GeoPrefix": {
+      "ROUTE_ORIGIN_AUTHORIZATION": ["AS"],
+      "ORIGINATE": ["AS"],
       "MANAGED_BY": ["IXP", "AuthoritativeNameServer", "HostName"],
       "COUNTRY": ["Country"],
       "ASSIGNED": ["OpaqueID"],
@@ -1138,116 +1282,129 @@
       "RESERVED": ["OpaqueID"],
       "PART_OF": [
         "Prefix",
-        "RIRPrefix",
         "BGPPrefix",
+        "RIRPrefix",
         "PeeringLAN",
-        "GeoPrefix",
         "RPKIPrefix",
-        "RDNSPrefix"
+        "RDNSPrefix",
+        "IP",
+        "Resolver"
       ],
       "AVAILABLE": ["OpaqueID"],
       "CATEGORIZED": ["Tag"]
     },
     "RPKIPrefix": {
+      "ROUTE_ORIGIN_AUTHORIZATION": ["AS"],
+      "ORIGINATE": ["AS"],
+      "PART_OF": [
+        "GeoPrefix",
+        "BGPPrefix",
+        "Prefix",
+        "RIRPrefix",
+        "PeeringLAN",
+        "RPKIPrefix",
+        "RDNSPrefix",
+        "IP",
+        "Resolver"
+      ],
       "MANAGED_BY": ["IXP", "AuthoritativeNameServer", "HostName"],
       "COUNTRY": ["Country"],
       "ASSIGNED": ["OpaqueID"],
       "DEPENDS_ON": ["AS"],
-      "PART_OF": [
-        "Prefix",
-        "BGPPrefix",
-        "RIRPrefix",
-        "PeeringLAN",
-        "GeoPrefix",
-        "RPKIPrefix",
-        "RDNSPrefix"
-      ],
       "CATEGORIZED": ["Tag"]
     },
     "RDNSPrefix": {
+      "ROUTE_ORIGIN_AUTHORIZATION": ["AS"],
+      "ORIGINATE": ["AS"],
+      "PART_OF": [
+        "GeoPrefix",
+        "BGPPrefix",
+        "Prefix",
+        "RPKIPrefix",
+        "RIRPrefix",
+        "PeeringLAN",
+        "RDNSPrefix",
+        "IP",
+        "Resolver"
+      ],
       "MANAGED_BY": ["IXP", "AuthoritativeNameServer", "HostName"],
       "COUNTRY": ["Country"],
       "ASSIGNED": ["OpaqueID"],
       "DEPENDS_ON": ["AS"],
       "RESERVED": ["OpaqueID"],
-      "PART_OF": [
-        "Prefix",
-        "BGPPrefix",
-        "RIRPrefix",
-        "PeeringLAN",
-        "GeoPrefix",
-        "RPKIPrefix",
-        "RDNSPrefix"
-      ],
       "AVAILABLE": ["OpaqueID"],
       "CATEGORIZED": ["Tag"]
     },
-    "PeeringLAN": {
-      "MANAGED_BY": ["IXP", "AuthoritativeNameServer", "HostName"],
-      "COUNTRY": ["Country"],
-      "ASSIGNED": ["OpaqueID"],
-      "DEPENDS_ON": ["AS"],
-      "RESERVED": ["OpaqueID"],
-      "PART_OF": [
-        "Prefix",
-        "BGPPrefix",
-        "RIRPrefix",
-        "PeeringLAN",
+    "PeeringdbNetID": { "EXTERNAL_ID": ["AS"] },
+    "OpaqueID": {
+      "ASSIGNED": [
+        "AS",
         "GeoPrefix",
+        "BGPPrefix",
+        "Prefix",
         "RPKIPrefix",
-        "RDNSPrefix"
+        "RDNSPrefix",
+        "PeeringLAN",
+        "RIRPrefix"
       ],
-      "CATEGORIZED": ["Tag"]
-    },
-    "RIRPrefix": {
-      "MANAGED_BY": ["IXP", "AuthoritativeNameServer", "HostName"],
-      "COUNTRY": ["Country"],
-      "ASSIGNED": ["OpaqueID"],
-      "DEPENDS_ON": ["AS"],
-      "RESERVED": ["OpaqueID"],
-      "PART_OF": [
-        "Prefix",
-        "BGPPrefix",
-        "PeeringLAN",
+      "RESERVED": [
+        "AS",
         "GeoPrefix",
-        "RPKIPrefix",
-        "RDNSPrefix"
+        "BGPPrefix",
+        "Prefix",
+        "RDNSPrefix",
+        "PeeringLAN",
+        "RIRPrefix"
       ],
-      "AVAILABLE": ["OpaqueID"],
-      "CATEGORIZED": ["Tag"]
-    },
-    "Ranking": { "COUNTRY": ["Country"] },
-    "IP": {
-      "ASSIGNED": ["AtlasProbe"],
-      "PART_OF": [
-        "URL",
-        "Prefix",
-        "BGPPrefix",
-        "RIRPrefix",
-        "PeeringLAN",
+      "AVAILABLE": [
+        "AS",
         "GeoPrefix",
-        "RPKIPrefix",
-        "RDNSPrefix"
-      ],
-      "CATEGORIZED": ["Tag"]
-    },
-    "Resolver": {
-      "ASSIGNED": ["AtlasProbe"],
-      "PART_OF": [
-        "URL",
-        "Prefix",
         "BGPPrefix",
-        "RIRPrefix",
-        "PeeringLAN",
-        "GeoPrefix",
-        "RPKIPrefix",
-        "RDNSPrefix"
+        "Prefix",
+        "RDNSPrefix",
+        "RIRPrefix"
       ]
     },
     "URL": {
-      "PART_OF": ["AuthoritativeNameServer", "HostName"],
+      "CENSORED": ["AS"],
+      "WEBSITE": ["AS", "Facility", "Organization", "IXP"],
+      "PART_OF": ["IP", "Resolver", "AuthoritativeNameServer", "HostName"],
       "CATEGORIZED": ["Tag"]
     },
-    "Tag": { "PART_OF": ["Tag"] }
+    "Tag": {
+      "CENSORED": ["AS"],
+      "CATEGORIZED": [
+        "AS",
+        "GeoPrefix",
+        "BGPPrefix",
+        "Prefix",
+        "RPKIPrefix",
+        "RDNSPrefix",
+        "PeeringLAN",
+        "RIRPrefix",
+        "IP",
+        "URL"
+      ],
+      "PART_OF": ["Tag"]
+    },
+    "Name": { "NAME": ["AS", "Facility", "Organization", "IXP"] },
+    "PeeringdbFacID": { "EXTERNAL_ID": ["Facility"] },
+    "PeeringdbOrgID": { "EXTERNAL_ID": ["Organization"] },
+    "CaidaOrgID": { "EXTERNAL_ID": ["Organization"] },
+    "AtlasProbe": {
+      "LOCATED_IN": ["AS", "Point"],
+      "COUNTRY": ["Country"],
+      "PART_OF": ["AtlasMeasurement"],
+      "ASSIGNED": ["IP", "Resolver"]
+    },
+    "CaidaIXID": { "EXTERNAL_ID": ["IXP"] },
+    "PeeringdbIXID": { "EXTERNAL_ID": ["IXP"] },
+    "DomainName": {
+      "RANK": ["Ranking"],
+      "MANAGED_BY": ["AuthoritativeNameServer", "HostName"],
+      "PARENT": ["DomainName"],
+      "QUERIED_FROM": ["AS", "Country"],
+      "PART_OF": ["HostName", "AuthoritativeNameServer"]
+    }
   }
 }
