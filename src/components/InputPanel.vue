@@ -146,30 +146,82 @@ onMounted(() => {
           endColumn: position.column,
         });
 
-        const matchNode = textUtilPosition.match(/:\s*([A-Za-z0-9_]+)(?=[\s)\-\[\{]|$)/);
-        const matchRel = textUtilPosition.match (/\[\s*\w*\s*:\s*([A-Za-z0-9_]+)(?=[\s\]\-]|$)/);
+        const matchNodes = [...textUtilPosition.matchAll(/\(\s*\w*\s*:\s*([A-Za-z0-9_]+)/g)];
+        const matchRels = [...textUtilPosition.matchAll(/\[\s*\w*\s*:\s*([A-Za-z0-9_]+)(?=[\s\]\-]|$)/g)];
         const nodePropMatch = textUtilPosition.match(
           /(?:\(\s*\w*\s*:\s*[A-Za-z0-9_]+\s*\{\s*([A-Za-z0-9_]*))|\b([A-Za-z][A-Za-z0-9_]*)\.\s*([A-Za-z0-9_]*)$/
         );
         const relPropMatch = textUtilPosition.match(
           /\[\s*\w*\s*:\s*[A-Za-z0-9_]+\s*\{\s*([A-Za-z0-9_]*)$/
         );
+        const aliasLabelRE = /\(\s*(\w*)\s*:\s*([A-Za-z0-9_]+)/g;
+        const relAliasTypeRE = /\[\s*(\w*)\s*:\s*([A-Za-z0-9_]+)/g;
+        const dotPropMatch = textUtilPosition.match(
+          /\b([A-Za-z][A-Za-z0-9_]*)\.\s*([A-Za-z0-9_]*)$/
+        );
+        const chainedNodeMatch = textUtilPosition.match(/\)\s*--\s*\(\s*:?[\w]*\s*$/);
+        const pathAliasMatch = [...textUtilPosition.matchAll(/MATCH\s+(\w+)\s*=\s*\(.*?\)/g)];
+        const pathAliases = pathAliasMatch.map(m => m[1]);
+        const relWithoutTypePropMatch = textUtilPosition.match(/\[\s*\{\s*([A-Za-z0-9_]*)$/);
+
+        const activeNodeLabel = matchNodes.length
+        ? matchNodes[matchNodes.length - 1][1]
+        : null;
+
+        const activeRelationship = matchRels.length && !chainedNodeMatch
+        ? matchRels[matchRels.length - 1][1]
+        : null;
+
+        const aliasMap = {};
+
+        for (const m of textUtilPosition.matchAll(aliasLabelRE)) {
+          const alias = m[1] || null;
+          const label = m[2];
+          if (alias) aliasMap[alias] = label;
+        }
+
+        for (const m of textUtilPosition.matchAll(relAliasTypeRE)) {
+          const alias = m[1] || null;
+          const type  = m[2];
+          if (alias) aliasMap[alias] = type;
+        }
 
         let relationships = [];
         let targetNodes = [];
         let properties = [];
 
-        if(matchNode){
-          relationships = Object.keys( schema.schema[matchNode[1]] || {} );
+        if(activeNodeLabel){
+          relationships = Object.keys(schema.schema[activeNodeLabel] || {} );
+          const connectedVia = schema.schema[activeNodeLabel] || {};
+          targetNodes = Object.values(connectedVia).flat();
+          targetNodes = [...new Set(targetNodes)];
         }
-        if(matchRel && matchNode){
-          targetNodes = schema.schema[matchNode[1]][matchRel[1]] || []; 
+        if(activeRelationship && activeNodeLabel){
+          targetNodes = schema.schema[activeNodeLabel]?.[activeRelationship] || []; 
         }
-        if(matchNode && nodePropMatch){
-          properties = schema.node_properties[matchNode[1]] || [];
+        if(activeNodeLabel && nodePropMatch){
+          properties = schema.node_properties[activeNodeLabel] || [];
         }
-        if(matchRel && relPropMatch){
-          properties = schema.relationship_properties[matchRel[1]] || [];
+        if(activeRelationship && relPropMatch){
+          properties = schema.relationship_properties[activeRelationship] || [];
+        }
+        if(activeNodeLabel && relWithoutTypePropMatch){
+          const relTypes = Object.keys(schema.schema[activeNodeLabel] || {});
+          properties = relTypes.flatMap(type => schema.relationship_properties[type] || []);
+          properties = [...new Set (properties)];
+        }
+        if (dotPropMatch) {
+          const alias     = dotPropMatch[1];
+          if (pathAliases.includes(alias)) {
+          return { suggestions: [] };
+          }
+          const labelOrType = aliasMap[alias];
+          if (schema.node_properties[labelOrType]) {
+            properties = schema.node_properties[labelOrType] || [];
+          }
+          else if (schema.relationship_properties[labelOrType]) {
+            properties = schema.relationship_properties[labelOrType] || [];
+          }
         }
 
         const autocompleteSchema = {
@@ -180,7 +232,7 @@ onMounted(() => {
             ...Object.values(schema.relationship_properties).flat(),
           ],
         };
-      
+
         const completionItems = autocomplete(
           textUtilPosition,
           autocompleteSchema,
