@@ -146,8 +146,12 @@ onMounted(() => {
           endColumn: position.column,
         });
 
-        const matchNodes = [...textUtilPosition.matchAll(/\(\s*\w*\s*:\s*([A-Za-z0-9_]+)/g)];
-        const matchRels = [...textUtilPosition.matchAll(/\[\s*\w*\s*:\s*([A-Za-z0-9_]+)(?=[\s\]\-]|$)/g)];
+        const split = textUtilPosition.split(/(?=MATCH|OPTIONAL MATCH|MERGE)/gi);
+        const lastMatchClause = split.length ? split[split.length - 1] : textUtilPosition;
+
+        const matchNodes = [...lastMatchClause.matchAll(/\(\s*\w*\s*:\s*([A-Za-z0-9_]+)/g)];
+        const matchRels = [...lastMatchClause.matchAll(/\[\s*\w*\s*:\s*([A-Za-z0-9_]+)(?=[\s\]\-]|$)/g)];
+      
         const nodePropMatch = textUtilPosition.match(
           /(?:\(\s*\w*\s*:\s*[A-Za-z0-9_]+\s*\{\s*([A-Za-z0-9_]*))|\b([A-Za-z][A-Za-z0-9_]*)\.\s*([A-Za-z0-9_]*)$/
         );
@@ -159,10 +163,13 @@ onMounted(() => {
         const dotPropMatch = textUtilPosition.match(
           /\b([A-Za-z][A-Za-z0-9_]*)\.\s*([A-Za-z0-9_]*)$/
         );
-        const chainedNodeMatch = textUtilPosition.match(/\)\s*--\s*\(\s*:?[\w]*\s*$/);
+        const chainedNodeMatch = textUtilPosition.match(/\)\s*--\s*\(\s*(\w*\s*:)?\s*[\w]+.*$/);
         const pathAliasMatch = [...textUtilPosition.matchAll(/MATCH\s+(\w+)\s*=\s*\(.*?\)/g)];
         const pathAliases = pathAliasMatch.map(m => m[1]);
         const relWithoutTypePropMatch = textUtilPosition.match(/\[\s*\{\s*([A-Za-z0-9_]*)$/);
+
+        const relInPathMatch = textUtilPosition.match(/\b(\w+)\s+IN\s+relationships\(\s*(\w+)\s*\)/);
+        const nodeInPathMatch = textUtilPosition.match(/\b(\w+)\s+IN\s+nodes\(\s*(\w+)\s*\)/);
 
         const activeNodeLabel = matchNodes.length
         ? matchNodes[matchNodes.length - 1][1]
@@ -212,15 +219,38 @@ onMounted(() => {
         }
         if (dotPropMatch) {
           const alias     = dotPropMatch[1];
-          if (pathAliases.includes(alias)) {
-          return { suggestions: [] };
+          if (relInPathMatch && alias === relInPathMatch[1]) {
+            const pathVar = relInPathMatch[2];
+            let relTypes = []; 
+            for (const m of textUtilPosition.matchAll(/MATCH\s+(\w+)\s*=\s*.*?\[:([A-Za-z0-9_]+)/g)) {
+              if (m[1] === pathVar) {
+                  relTypes.push(m[2]);
+              }
+            }
+            properties = relTypes.flatMap(type => schema.relationship_properties[type] || []);
+            properties = [...new Set(properties)];
+          } else if (nodeInPathMatch && alias === nodeInPathMatch[1]) {
+            const pathVar = nodeInPathMatch[2];
+            let nodeLabels = [];
+            for (const m of textUtilPosition.matchAll(/MATCH\s+(\w+)\s*=\s*\((?:\w*):([A-Za-z0-9_]+)/g)) {
+              if (m[1] === pathVar) {
+                  nodeLabels.push(m[2]);
+              }
+            }
+            nodeLabels = [...new Set(nodeLabels)];
+            properties = [...new Set(nodeLabels.flatMap(label => schema.node_properties[label] || []))];
           }
-          const labelOrType = aliasMap[alias];
-          if (schema.node_properties[labelOrType]) {
-            properties = schema.node_properties[labelOrType] || [];
-          }
-          else if (schema.relationship_properties[labelOrType]) {
-            properties = schema.relationship_properties[labelOrType] || [];
+          else{
+            if (pathAliases.includes(alias)) {
+            return { suggestions: [] };
+            }
+            const labelOrType = aliasMap[alias];
+            if (schema.node_properties[labelOrType]) {
+              properties = schema.node_properties[labelOrType] || [];
+            }
+            else if (schema.relationship_properties[labelOrType]) {
+              properties = schema.relationship_properties[labelOrType] || [];
+            }
           }
         }
 
