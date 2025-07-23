@@ -151,6 +151,10 @@ onMounted(() => {
 
         const matchNodes = [...lastMatchClause.matchAll(/\(\s*\w*\s*:\s*([A-Za-z0-9_]+)/g)];
         const matchRels = [...lastMatchClause.matchAll(/\[\s*\w*\s*:\s*([A-Za-z0-9_]+)(?=[\s\]\-]|$)/g)];
+
+        const trimmedBeforeCursor = textUtilPosition.trimRight();
+        const justOpenedBlock = /\b(?:WHERE\s+NOT\s+EXISTS|CALL|EXISTS|FOREACH\s*\([^)]+\))\s*\{$/.test(trimmedBeforeCursor);
+        const genericNodeMatch = textUtilPosition.match(/MATCH\s*\(\s*\{\s*$/);
       
         const nodePropMatch = textUtilPosition.match(
           /(?:\(\s*\w*\s*:\s*[A-Za-z0-9_]+\s*\{\s*([A-Za-z0-9_]*))|\b([A-Za-z][A-Za-z0-9_]*)\.\s*([A-Za-z0-9_]*)$/
@@ -202,6 +206,13 @@ onMounted(() => {
           const connectedVia = schema.schema[activeNodeLabel] || {};
           targetNodes = Object.values(connectedVia).flat();
           targetNodes = [...new Set(targetNodes)];
+        }
+        if (justOpenedBlock) {
+          return { suggestions: [] };
+        }
+        if (genericNodeMatch) {
+          const allProps = Object.values(schema.node_properties || {}).flat();
+          properties = [...new Set(allProps)];
         }
         if(activeRelationship && activeNodeLabel){
           targetNodes = schema.schema[activeNodeLabel]?.[activeRelationship] || []; 
