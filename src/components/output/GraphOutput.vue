@@ -24,6 +24,10 @@ const hideOverviewBtn = ref(false);
 const hideOverviewBtnIcon = ref("keyboard_arrow_up");
 const overview = ref();
 let nvl = null;
+const nodeRightClickMenu = ref({
+  node: null,
+  clicked: false
+})
 
 const options = {
   disableTelemetry: true,
@@ -57,6 +61,10 @@ const zoomOut = () => {
 const reset = () => {
   nvl.resetZoom();
 };
+
+const nodeExpansion = () => {
+  console.log("Expand:", nodeRightClickMenu.value.node)
+}
 
 const updateNvlElementselectedElement = (element) => {
   if (!element && selectedElement.value.clicked) {
@@ -166,6 +174,23 @@ const init = (nodes, relationships) => {
       selectedElement.value.clicked = true;
       updateNvlElementselectedElement();
     });
+
+    clickInteraction.updateCallback("onNodeRightClick", (node) => {
+      if (node) {
+        nodeRightClickMenu.value.node = node
+        nodeRightClickMenu.value.clicked = true
+      }
+    });
+    clickInteraction.updateCallback("onRelationshipRightClick", (relationship) => {
+      if (relationship) {
+        nodeRightClickMenu.value.node = null
+        nodeRightClickMenu.value.clicked = false
+      }
+    });
+    clickInteraction.updateCallback("onCanvasRightClick", (canvas) => {
+      nodeRightClickMenu.value.node = null
+      nodeRightClickMenu.value.clicked = false
+    });
   }
 };
 
@@ -189,7 +214,15 @@ onUnmounted(() => {
 
 <template>
   <div class="graph">
-    <div ref="graph"></div>
+    <div ref="graph">
+      <q-menu :target="nodeRightClickMenu.clicked" context-menu>
+        <q-list dense>
+          <q-item clickable v-close-popup @click="nodeExpansion">
+            <q-item-section>Expand</q-item-section>
+          </q-item>
+        </q-list>
+      </q-menu>
+    </div>
     <q-card class="overview" ref="overview">
       <q-bar class="fixed-top overview-bar">
         <div class="row justify-between" style="width: 100%">
