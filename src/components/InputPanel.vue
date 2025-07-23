@@ -218,10 +218,10 @@ onMounted(() => {
           targetNodes = schema.schema[activeNodeLabel]?.[activeRelationship] || []; 
         }
         if(activeNodeLabel && nodePropMatch){
-          properties = schema.node_properties[activeNodeLabel] || [];
+          properties = [...new Set(schema.node_properties[activeNodeLabel] || [])];
         }
         if(activeRelationship && relPropMatch){
-          properties = schema.relationship_properties[activeRelationship] || [];
+          properties = [...new Set(schema.relationship_properties[activeRelationship] || [])];
         }
         if(activeNodeLabel && relWithoutTypePropMatch){
           const relTypes = Object.keys(schema.schema[activeNodeLabel] || {});
@@ -257,10 +257,10 @@ onMounted(() => {
             }
             const labelOrType = aliasMap[alias];
             if (schema.node_properties[labelOrType]) {
-              properties = schema.node_properties[labelOrType] || [];
+              properties = [...new Set(schema.node_properties[labelOrType] || [])];
             }
             else if (schema.relationship_properties[labelOrType]) {
-              properties = schema.relationship_properties[labelOrType] || [];
+              properties = [...new Set(schema.relationship_properties[labelOrType] || [])];
             }
           }
         }
@@ -268,10 +268,10 @@ onMounted(() => {
         const autocompleteSchema = {
           labels: targetNodes.length > 0 ? targetNodes : Object.keys(schema.node_properties),
           relationshipTypes: relationships.length > 0 ? relationships : Object.keys(schema.relationship_properties),
-          propertyKeys: properties.length > 0 ? properties : [
+          propertyKeys: properties.length > 0 ? properties : [...new Set([
             ...Object.values(schema.node_properties).flat(),
             ...Object.values(schema.relationship_properties).flat(),
-          ],
+          ])],
         };
 
         const completionItems = autocomplete(
