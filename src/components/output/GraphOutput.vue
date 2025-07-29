@@ -26,8 +26,8 @@ const overview = ref();
 let nvl = null;
 const nodeRightClickMenu = ref({
   node: null,
-  clicked: false
-})
+  clicked: false,
+});
 
 const options = {
   disableTelemetry: true,
@@ -63,8 +63,8 @@ const reset = () => {
 };
 
 const nodeExpansion = () => {
-  console.log("Expand:", nodeRightClickMenu.value.node)
-}
+  console.log("Expand:", nodeRightClickMenu.value.node);
+};
 
 const updateNvlElementselectedElement = (element) => {
   if (!element && selectedElement.value.clicked) {
@@ -177,19 +177,22 @@ const init = (nodes, relationships) => {
 
     clickInteraction.updateCallback("onNodeRightClick", (node) => {
       if (node) {
-        nodeRightClickMenu.value.node = node
-        nodeRightClickMenu.value.clicked = true
+        nodeRightClickMenu.value.node = node;
+        nodeRightClickMenu.value.clicked = true;
       }
     });
-    clickInteraction.updateCallback("onRelationshipRightClick", (relationship) => {
-      if (relationship) {
-        nodeRightClickMenu.value.node = null
-        nodeRightClickMenu.value.clicked = false
-      }
-    });
+    clickInteraction.updateCallback(
+      "onRelationshipRightClick",
+      (relationship) => {
+        if (relationship) {
+          nodeRightClickMenu.value.node = null;
+          nodeRightClickMenu.value.clicked = false;
+        }
+      },
+    );
     clickInteraction.updateCallback("onCanvasRightClick", (canvas) => {
-      nodeRightClickMenu.value.node = null
-      nodeRightClickMenu.value.clicked = false
+      nodeRightClickMenu.value.node = null;
+      nodeRightClickMenu.value.clicked = false;
     });
   }
 };

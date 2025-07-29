@@ -27,11 +27,12 @@ const Neo4jApi = {
             },
           },
         );
+        const responseDataValues = response.data.data.values.flat();
         return {
-          graph: nvlResultTransformer(response.data.data.values),
+          graph: nvlResultTransformer(responseDataValues),
           table: tableResultTransformer(
             response.data.data.fields,
-            response.data.data.values,
+            responseDataValues,
           ),
         };
       } catch (error) {
@@ -45,40 +46,42 @@ const Neo4jApi = {
       const colorMap = new Map();
       const nodes = [];
       const relationships = [];
-      results.forEach((row) => {
-        row.forEach((value) => {
-          if (value["$type"] === "Path") {
-            value["_value"].forEach((path) => {
-              if (path["$type"] === "Node") {
-                const node = nvlResultTransformerNode(path["_value"], colorMap);
-                if (nodes.indexOf(node) === -1) {
-                  nodes.push(node);
-                }
-              } else if (path["$type"] === "Relationship") {
-                const relationship = nvlResultTransformerRelationship(
-                  path["_value"],
-                );
-                if (relationships.indexOf(relationship) === -1) {
-                  relationships.push(relationship);
-                }
-              }
-            });
+      results
+        .map((row) => {
+          if (row["$type"] === "Path") {
+            return row["_value"];
           }
-          if (value["$type"] === "Node") {
-            const node = nvlResultTransformerNode(value["_value"], colorMap);
+          return row;
+        })
+        .flat()
+        .forEach((row) => {
+          if (row["$type"] === "Path") {
+            row = row["_value"];
+          }
+          if (row["$type"] === "Node") {
+            const node = nvlResultTransformerNode(row["_value"], colorMap);
             if (nodes.indexOf(node) === -1) {
               nodes.push(node);
             }
+          } else if (row["$type"] === "Relationship") {
+            const relationship = nvlResultTransformerRelationship(
+              row["_value"],
+            );
+            if (relationships.indexOf(relationship) === -1) {
+              relationships.push(relationship);
+            }
           }
         });
-      });
       return { nodes, relationships };
     };
 
     const nvlResultTransformerNode = (node, colorMap) => {
       const nodeType = node["_labels"][0];
       if (!colorMap.has(nodeType)) {
-        colorMap.set(nodeType, randomColor());
+        colorMap.set(
+          nodeType,
+          randomColor({ seed: nodeType, luminosity: "light" }),
+        );
       }
       const properties = {};
       Object.keys(node["_properties"]).forEach((value) => {
@@ -133,54 +136,50 @@ const Neo4jApi = {
           index: 0,
         };
         results.forEach((row) => {
-          row.forEach((value) => {
-            if (countElementsInRow === 0) {
-              returnedRow = {
-                index: returnedRow.index + 1,
-              };
-            }
-            if (value["$type"] === "Path") {
-              const graphObj = [];
-              value["_value"].forEach((path) => {
-                const properties = {};
-                Object.keys(path["_value"]["_properties"]).forEach((prop) => {
-                  properties[prop] =
-                    path["_value"]["_properties"][prop]["_value"];
-                  if (path["_value"]["_properties"][prop]["$type"] === "List") {
-                    properties[prop] = path["_value"]["_properties"][prop][
-                      "_value"
-                    ].map((val) => val["_value"]);
-                  }
-                });
-                graphObj.push(properties);
+          if (countElementsInRow === 0) {
+            returnedRow = {
+              index: returnedRow.index + 1,
+            };
+          }
+          if (row["$type"] === "Path") {
+            const graphObj = [];
+            row["_value"].forEach((path) => {
+              const properties = {};
+              Object.keys(path["_value"]["_properties"]).forEach((prop) => {
+                properties[prop] =
+                  path["_value"]["_properties"][prop]["_value"];
+                if (path["_value"]["_properties"][prop]["$type"] === "List") {
+                  properties[prop] = path["_value"]["_properties"][prop][
+                    "_value"
+                  ].map((value) => value["_value"]);
+                }
+              });
+              graphObj.push(properties);
+            });
+            returnedRow[columns[countElementsInRow + 1].name] =
+              JSON.stringify(graphObj);
+          } else {
+            returnedRow[columns[countElementsInRow + 1].name] = row["_value"];
+            if (row["$type"] === "List") {
+              returnedRow[columns[countElementsInRow + 1].name] =
+                JSON.stringify(row["_value"].map((value) => value["_value"]));
+            } else if (
+              row["$type"] === "Node" ||
+              row["$type"] === "Relationship"
+            ) {
+              const properties = {};
+              Object.keys(row["_value"]["_properties"]).forEach((prop) => {
+                properties[prop] = row["_value"]["_properties"][prop]["_value"];
               });
               returnedRow[columns[countElementsInRow + 1].name] =
-                JSON.stringify(graphObj);
-            } else {
-              returnedRow[columns[countElementsInRow + 1].name] =
-                value["_value"];
-              if (value["$type"] === "List") {
-                returnedRow[columns[countElementsInRow + 1].name] =
-                  JSON.stringify(value["_value"].map((val) => val["_value"]));
-              } else if (
-                value["$type"] === "Node" ||
-                value["$type"] === "Relationship"
-              ) {
-                const properties = {};
-                Object.keys(value["_value"]["_properties"]).forEach((prop) => {
-                  properties[prop] =
-                    value["_value"]["_properties"][prop]["_value"];
-                });
-                returnedRow[columns[countElementsInRow + 1].name] =
-                  JSON.stringify(properties);
-              }
+                JSON.stringify(properties);
             }
-            countElementsInRow += 1;
-            if (countElementsInRow === columns.length - 1) {
-              countElementsInRow = 0;
-              rows.push(returnedRow);
-            }
-          });
+          }
+          countElementsInRow += 1;
+          if (countElementsInRow === columns.length - 1) {
+            countElementsInRow = 0;
+            rows.push(returnedRow);
+          }
         });
       }
       return { rows, columns };
