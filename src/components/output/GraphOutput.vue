@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onUnmounted, watch } from "vue";
+import { ref, onMounted, onUnmounted, watch, inject } from "vue";
 import { NVL } from "@neo4j-nvl/base";
 import {
   ZoomInteraction,
@@ -9,6 +9,8 @@ import {
   ClickInteraction,
 } from "@neo4j-nvl/interaction-handlers";
 
+const Neo4jApi = inject("Neo4jApi");
+const emit = defineEmits(['nodeExpanded']);
 const props = defineProps(["nodes", "relationships"]);
 
 const graph = ref();
@@ -62,9 +64,36 @@ const reset = () => {
   nvl.resetZoom();
 };
 
-const nodeExpansion = () => {
-  console.log("Expand:", nodeRightClickMenu.value.node);
-};
+const fetchConnectedNodes = async (nodeId) => {
+  const cypher = `
+    MATCH (n)
+    WHERE elementId(n) = "${nodeId}"
+    MATCH (n)-[r]->(m)
+    WITH type(r) AS relType, r, m
+    WITH relType, collect({r: r, m: m}) AS connections
+    UNWIND connections[..1] AS conn
+    RETURN conn.r AS rel, conn.m AS target
+  `
+  const res = await Neo4jApi.run(cypher);
+  return {
+    nodes: res.graph?.nodes || [],
+    relationships: res.graph?.relationships || []
+  }
+}
+
+const nodeExpansion = async (nodeId) => {
+  const { nodes: newNodes, relationships: newRels, rows: newRows, columns: newCols } = await fetchConnectedNodes(nodeId);
+  if(newNodes.length){
+    nvl.addAndUpdateElementsInGraph([...newNodes], [...newRels]);
+    emit('nodeExpanded', {
+      newNodes,
+      newRels
+    });
+  }
+  else{
+    console.log("node is not expandable");
+  }
+}
 
 const updateNvlElementselectedElement = (element) => {
   if (!element && selectedElement.value.clicked) {
@@ -218,9 +247,9 @@ onUnmounted(() => {
 <template>
   <div class="graph">
     <div ref="graph">
-      <q-menu :target="nodeRightClickMenu.clicked" context-menu>
+      <q-menu v-model="nodeRightClickMenu.clicked" context-menu>
         <q-list dense>
-          <q-item clickable v-close-popup @click="nodeExpansion">
+          <q-item clickable v-close-popup @click="() => nodeExpansion(nodeRightClickMenu.node?.id)">
             <q-item-section>Expand</q-item-section>
           </q-item>
         </q-list>
