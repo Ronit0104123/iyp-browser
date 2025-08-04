@@ -1356,14 +1356,7 @@
         "PeeringLAN",
         "RIRPrefix"
       ],
-      "AVAILABLE": [
-        "AS",
-        "GeoPrefix",
-        "BGPPrefix",
-        "Prefix",
-        "RDNSPrefix",
-        "RIRPrefix"
-      ]
+      "AVAILABLE": ["AS", "GeoPrefix", "BGPPrefix", "Prefix", "RDNSPrefix", "RIRPrefix"]
     },
     "URL": {
       "CENSORED": ["AS"],

@@ -1,71 +1,71 @@
 <script setup>
-import { ref, onMounted, onUnmounted, watch, inject } from "vue";
-import { NVL } from "@neo4j-nvl/base";
+import { ref, onMounted, onUnmounted, watch, inject } from 'vue'
+import { NVL } from '@neo4j-nvl/base'
 import {
   ZoomInteraction,
   PanInteraction,
   DragNodeInteraction,
   HoverInteraction,
-  ClickInteraction,
-} from "@neo4j-nvl/interaction-handlers";
+  ClickInteraction
+} from '@neo4j-nvl/interaction-handlers'
 import { useQuasar } from 'quasar'
 
-const Neo4jApi = inject("Neo4jApi");
-const emit = defineEmits(['nodeExpanded']);
-const props = defineProps(["nodes", "relationships"]);
+const Neo4jApi = inject('Neo4jApi')
+const emit = defineEmits(['nodeExpanded'])
+const props = defineProps(['nodes', 'relationships'])
 
 const q = useQuasar()
 
-const graph = ref();
-const properties = ref({});
+const graph = ref()
+const properties = ref({})
 const selectedElement = ref({
-  nodeOrRelationship: "",
-  id: "",
-  type: "",
-  color: "",
-  clicked: false,
-});
-const hideOverviewBtn = ref(false);
-const hideOverviewBtnIcon = ref("keyboard_arrow_up");
-const overview = ref();
-let nvl = null;
+  nodeOrRelationship: '',
+  id: '',
+  type: '',
+  color: '',
+  clicked: false
+})
+const hideOverviewBtn = ref(false)
+const hideOverviewBtnIcon = ref('keyboard_arrow_up')
+const overview = ref()
+let nvl = null
 const nodeRightClickMenu = ref({
   node: null,
-  clicked: false,
-});
+  clicked: false
+})
 
 const options = {
   disableTelemetry: true,
-  layout: "forceDirected",
+  layout: 'forceDirected',
   initialZoom: 1,
-  renderer: "canvas",
+  renderer: 'canvas',
   maxZoom: 3,
-  minZoom: 1,
-};
+  minZoom: 1
+}
 
 const hideOverview = () => {
-  hideOverviewBtn.value = !hideOverviewBtn.value;
+  hideOverviewBtn.value = !hideOverviewBtn.value
   if (hideOverviewBtn.value) {
-    overview.value.$el.style.height = "auto";
-    hideOverviewBtnIcon.value = "keyboard_arrow_down";
+    overview.value.$el.style.height = 'auto'
+    hideOverviewBtnIcon.value = 'keyboard_arrow_down'
   } else {
-    overview.value.$el.style.width = "250px";
-    overview.value.$el.style.height = "100%";
-    hideOverviewBtnIcon.value = "keyboard_arrow_up";
+    overview.value.$el.style.width = '250px'
+    overview.value.$el.style.height = '100%'
+    hideOverviewBtnIcon.value = 'keyboard_arrow_up'
   }
-};
+}
 
 const zoomIn = () => {
-  nvl.setZoom(nvl.getScale() + 0.5);
-};
+  nvl.setZoom(nvl.getScale() + 0.5)
+}
 
 const zoomOut = () => {
-  nvl.setZoom(nvl.getScale() - 0.5);
-};
+  nvl.setZoom(nvl.getScale() - 0.5)
+}
 
 const reset = () => {
-  nvl.resetZoom();
-};
+  nvl.resetZoom()
+}
 
 const fetchConnectedNodes = async (nodeId) => {
   const cypher = `
@@ -77,7 +77,7 @@ const fetchConnectedNodes = async (nodeId) => {
     UNWIND connections[..1] AS conn
     RETURN conn.r AS rel, conn.m AS target
   `
-  const res = await Neo4jApi.run(cypher);
+  const res = await Neo4jApi.run(cypher)
   return {
     nodes: res.graph?.nodes || [],
     relationships: res.graph?.relationships || []
@@ -85,174 +85,169 @@ const fetchConnectedNodes = async (nodeId) => {
 }
 
 const nodeExpansion = async (nodeId) => {
-  const { nodes: newNodes, relationships: newRels, rows: newRows, columns: newCols } = await fetchConnectedNodes(nodeId);
-  if(newNodes.length){
-    nvl.addAndUpdateElementsInGraph([...newNodes], [...newRels]);
+  const {
+    nodes: newNodes,
+    relationships: newRels,
+    rows: newRows,
+    columns: newCols
+  } = await fetchConnectedNodes(nodeId)
+  if (newNodes.length) {
+    nvl.addAndUpdateElementsInGraph([...newNodes], [...newRels])
     emit('nodeExpanded', {
       newNodes,
       newRels
-    });
-  }
-  else{
+    })
+  } else {
     q.notify({
-      message: "Node is not expandable",
-      position: "top",
-      type: "info",
-      color: "primary",
-      actions: [
-        { icon: "close", color: 'white', round: true, handler: () => {} }
-      ]
+      message: 'Node is not expandable',
+      position: 'top',
+      type: 'info',
+      color: 'primary',
+      actions: [{ icon: 'close', color: 'white', round: true, handler: () => {} }]
     })
   }
 }
 
 const updateNvlElementselectedElement = (element) => {
   if (!element && selectedElement.value.clicked) {
-    if (selectedElement.value.nodeOrRelationship === "node") {
-      const oldNode = nvl.getNodeById(selectedElement.value.id);
-      oldNode.selected = false;
-      nvl.addAndUpdateElementsInGraph([oldNode], []);
-    } else if (selectedElement.value.nodeOrRelationship === "relationship") {
-      const oldRelationship = nvl.getRelationshipById(selectedElement.value.id);
-      oldRelationship.selected = false;
-      nvl.addAndUpdateElementsInGraph([], [oldRelationship]);
+    if (selectedElement.value.nodeOrRelationship === 'node') {
+      const oldNode = nvl.getNodeById(selectedElement.value.id)
+      oldNode.selected = false
+      nvl.addAndUpdateElementsInGraph([oldNode], [])
+    } else if (selectedElement.value.nodeOrRelationship === 'relationship') {
+      const oldRelationship = nvl.getRelationshipById(selectedElement.value.id)
+      oldRelationship.selected = false
+      nvl.addAndUpdateElementsInGraph([], [oldRelationship])
     }
-    selectedElement.value.id = "";
-    selectedElement.value.nodeOrRelationship = "";
-    selectedElement.value.type = "";
-    selectedElement.value.color = "";
-    selectedElement.value.clicked = false;
-    properties.value = {};
-  } else if (element && selectedElement.value.id === "") {
-    properties.value = element.properties;
-    element.selected = true;
-    if (element.nodeOrRelationship === "node") {
-      nvl.addAndUpdateElementsInGraph([element], []);
+    selectedElement.value.id = ''
+    selectedElement.value.nodeOrRelationship = ''
+    selectedElement.value.type = ''
+    selectedElement.value.color = ''
+    selectedElement.value.clicked = false
+    properties.value = {}
+  } else if (element && selectedElement.value.id === '') {
+    properties.value = element.properties
+    element.selected = true
+    if (element.nodeOrRelationship === 'node') {
+      nvl.addAndUpdateElementsInGraph([element], [])
     } else {
-      nvl.addAndUpdateElementsInGraph([], [element]);
+      nvl.addAndUpdateElementsInGraph([], [element])
     }
-    selectedElement.value.id = element.id;
-    selectedElement.value.nodeOrRelationship = element.nodeOrRelationship;
-    selectedElement.value.type = element.type;
-    selectedElement.value.color = element.color;
+    selectedElement.value.id = element.id
+    selectedElement.value.nodeOrRelationship = element.nodeOrRelationship
+    selectedElement.value.type = element.type
+    selectedElement.value.color = element.color
   } else if (element && element?.id !== selectedElement.value.id) {
-    properties.value = element.properties;
-    element.selected = true;
-    if (selectedElement.value.nodeOrRelationship === "node") {
-      const oldNode = nvl.getNodeById(selectedElement.value.id);
-      oldNode.selected = false;
-      if (element.nodeOrRelationship === "node") {
-        nvl.addAndUpdateElementsInGraph([oldNode, element], []);
+    properties.value = element.properties
+    element.selected = true
+    if (selectedElement.value.nodeOrRelationship === 'node') {
+      const oldNode = nvl.getNodeById(selectedElement.value.id)
+      oldNode.selected = false
+      if (element.nodeOrRelationship === 'node') {
+        nvl.addAndUpdateElementsInGraph([oldNode, element], [])
       } else {
-        nvl.addAndUpdateElementsInGraph([oldNode], [element]);
+        nvl.addAndUpdateElementsInGraph([oldNode], [element])
       }
-    } else if (selectedElement.value.nodeOrRelationship === "relationship") {
-      const oldRelationship = nvl.getRelationshipById(selectedElement.value.id);
-      oldRelationship.selected = false;
-      nvl.addAndUpdateElementsInGraph([], [oldRelationship]);
-      if (element.nodeOrRelationship === "node") {
-        nvl.addAndUpdateElementsInGraph([element], [oldRelationship]);
+    } else if (selectedElement.value.nodeOrRelationship === 'relationship') {
+      const oldRelationship = nvl.getRelationshipById(selectedElement.value.id)
+      oldRelationship.selected = false
+      nvl.addAndUpdateElementsInGraph([], [oldRelationship])
+      if (element.nodeOrRelationship === 'node') {
+        nvl.addAndUpdateElementsInGraph([element], [oldRelationship])
       } else {
-        nvl.addAndUpdateElementsInGraph([], [oldRelationship, element]);
+        nvl.addAndUpdateElementsInGraph([], [oldRelationship, element])
       }
     } else {
-      if (element.nodeOrRelationship === "node") {
-        nvl.addAndUpdateElementsInGraph([element], []);
+      if (element.nodeOrRelationship === 'node') {
+        nvl.addAndUpdateElementsInGraph([element], [])
       } else {
-        nvl.addAndUpdateElementsInGraph([], [element]);
+        nvl.addAndUpdateElementsInGraph([], [element])
       }
     }
-    selectedElement.value.id = element.id;
-    selectedElement.value.nodeOrRelationship = element.nodeOrRelationship;
-    selectedElement.value.type = element.type;
-    selectedElement.value.color = element.color;
+    selectedElement.value.id = element.id
+    selectedElement.value.nodeOrRelationship = element.nodeOrRelationship
+    selectedElement.value.type = element.type
+    selectedElement.value.color = element.color
   }
-};
+}
 
 const init = (nodes, relationships) => {
   if (nodes.length) {
-    nvl = new NVL(graph.value, nodes, relationships, options);
-    nvl.setDisableWebGL(true);
-    new ZoomInteraction(nvl);
-    new PanInteraction(nvl);
-    new DragNodeInteraction(nvl).updateCallback("onDrag", (nodes) => {});
-    new HoverInteraction(nvl).updateCallback(
-      "onHover",
-      (element, hitElements, event) => {
-        if (!selectedElement.value.clicked) {
-          if (element) {
-            properties.value = element.properties;
-            selectedElement.value.id = "";
-            selectedElement.value.nodeOrRelationship =
-              element.nodeOrRelationship;
-            selectedElement.value.type = element.type;
-            selectedElement.value.color = element.color;
-          } else {
-            properties.value = {};
-            selectedElement.value.id = "";
-            selectedElement.value.nodeOrRelationship = "";
-            selectedElement.value.type = "";
-            selectedElement.value.color = "";
-          }
+    nvl = new NVL(graph.value, nodes, relationships, options)
+    nvl.setDisableWebGL(true)
+    new ZoomInteraction(nvl)
+    new PanInteraction(nvl)
+    new DragNodeInteraction(nvl).updateCallback('onDrag', (nodes) => {})
+    new HoverInteraction(nvl).updateCallback('onHover', (element, hitElements, event) => {
+      if (!selectedElement.value.clicked) {
+        if (element) {
+          properties.value = element.properties
+          selectedElement.value.id = ''
+          selectedElement.value.nodeOrRelationship = element.nodeOrRelationship
+          selectedElement.value.type = element.type
+          selectedElement.value.color = element.color
+        } else {
+          properties.value = {}
+          selectedElement.value.id = ''
+          selectedElement.value.nodeOrRelationship = ''
+          selectedElement.value.type = ''
+          selectedElement.value.color = ''
         }
-      },
-    );
-    const clickInteraction = new ClickInteraction(nvl);
-    clickInteraction.updateCallback("onNodeClick", (node) => {
-      if (node) {
-        selectedElement.value.clicked = true;
-        updateNvlElementselectedElement(node);
       }
-    });
-    clickInteraction.updateCallback("onRelationshipClick", (relationship) => {
+    })
+    const clickInteraction = new ClickInteraction(nvl)
+    clickInteraction.updateCallback('onNodeClick', (node) => {
+      if (node) {
+        selectedElement.value.clicked = true
+        updateNvlElementselectedElement(node)
+      }
+    })
+    clickInteraction.updateCallback('onRelationshipClick', (relationship) => {
       if (relationship) {
-        selectedElement.value.clicked = true;
-        updateNvlElementselectedElement(relationship);
+        selectedElement.value.clicked = true
+        updateNvlElementselectedElement(relationship)
       }
-    });
-    clickInteraction.updateCallback("onCanvasClick", (canvas) => {
-      selectedElement.value.clicked = true;
-      updateNvlElementselectedElement();
-    });
+    })
+    clickInteraction.updateCallback('onCanvasClick', (canvas) => {
+      selectedElement.value.clicked = true
+      updateNvlElementselectedElement()
+    })
 
-    clickInteraction.updateCallback("onNodeRightClick", (node) => {
+    clickInteraction.updateCallback('onNodeRightClick', (node) => {
       if (node) {
-        nodeRightClickMenu.value.node = node;
-        nodeRightClickMenu.value.clicked = true;
+        nodeRightClickMenu.value.node = node
+        nodeRightClickMenu.value.clicked = true
       }
-    });
-    clickInteraction.updateCallback(
-      "onRelationshipRightClick",
-      (relationship) => {
-        if (relationship) {
-          nodeRightClickMenu.value.node = null;
-          nodeRightClickMenu.value.clicked = false;
-        }
-      },
-    );
-    clickInteraction.updateCallback("onCanvasRightClick", (canvas) => {
-      nodeRightClickMenu.value.node = null;
-      nodeRightClickMenu.value.clicked = false;
-    });
+    })
+    clickInteraction.updateCallback('onRelationshipRightClick', (relationship) => {
+      if (relationship) {
+        nodeRightClickMenu.value.node = null
+        nodeRightClickMenu.value.clicked = false
+      }
+    })
+    clickInteraction.updateCallback('onCanvasRightClick', (canvas) => {
+      nodeRightClickMenu.value.node = null
+      nodeRightClickMenu.value.clicked = false
+    })
   }
-};
+}
 
 watch(props, () => {
   if (nvl) {
-    nvl.destroy();
+    nvl.destroy()
   }
-  init(props.nodes, props.relationships);
-});
+  init(props.nodes, props.relationships)
+})
 
 onMounted(async () => {
-  init(props.nodes, props.relationships);
-});
+  init(props.nodes, props.relationships)
+})
 
 onUnmounted(() => {
   if (nvl) {
-    nvl.destroy();
+    nvl.destroy()
   }
-});
+})
 </script>
 
 <template>
@@ -271,20 +266,8 @@ onUnmounted(() => {
         <div class="row justify-between" style="width: 100%">
           <q-btn icon="zoom_in" flat square color="white" @click="zoomIn" />
           <q-btn icon="zoom_out" flat square color="white" @click="zoomOut" />
-          <q-btn
-            icon="center_focus_strong"
-            flat
-            square
-            color="white"
-            @click="reset"
-          />
-          <q-btn
-            :icon="hideOverviewBtnIcon"
-            flat
-            square
-            color="white"
-            @click="hideOverview"
-          />
+          <q-btn icon="center_focus_strong" flat square color="white" @click="reset" />
+          <q-btn :icon="hideOverviewBtnIcon" flat square color="white" @click="hideOverview" />
         </div>
       </q-bar>
       <q-card-section style="padding-top: 0" v-if="!hideOverviewBtn">
@@ -298,9 +281,7 @@ onUnmounted(() => {
               :style="`background-color: ${selectedElement.color};`"
             />
           </div>
-          <div
-            v-else-if="selectedElement.nodeOrRelationship === 'relationship'"
-          >
+          <div v-else-if="selectedElement.nodeOrRelationship === 'relationship'">
             <div class="text-subtitle1">Relationship properties</div>
             <q-badge
               :label="selectedElement.type"
@@ -317,8 +298,7 @@ onUnmounted(() => {
                 v-for="(node, index) in nodes
                   .map((el) => ({ type: el.type, color: el.color }))
                   .filter(
-                    (value, index, self) =>
-                      index === self.findIndex((t) => t.type === value.type),
+                    (value, index, self) => index === self.findIndex((t) => t.type === value.type)
                   )"
                 :key="index"
               >
@@ -333,16 +313,10 @@ onUnmounted(() => {
             <div>
               <span
                 class="q-mr-sm"
-                v-for="(relType, index) in [
-                  ...new Set(relationships.map((el) => el.type)),
-                ]"
+                v-for="(relType, index) in [...new Set(relationships.map((el) => el.type))]"
                 :key="index"
               >
-                <q-badge
-                  :label="relType"
-                  text-color="white"
-                  style="background-color: #848484"
-                />
+                <q-badge :label="relType" text-color="white" style="background-color: #848484" />
               </span>
             </div>
           </div>

@@ -3,10 +3,10 @@ const GlobalVariables = {
     const GlobalVariables = {
       disableCypherInput: false,
       disableTextInput: true,
-      outputPanelHeight: 580,
-    };
-    app.provide("GlobalVariables", GlobalVariables);
-  },
-};
+      outputPanelHeight: 580
+    }
+    app.provide('GlobalVariables', GlobalVariables)
+  }
+}
 
-export { GlobalVariables };
+export { GlobalVariables }

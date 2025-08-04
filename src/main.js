@@ -1,28 +1,28 @@
-import "./assets/main.css";
+import './assets/main.css'
 
-import { createApp } from "vue";
-import App from "./App.vue";
-import router from "./router";
-import { Quasar, Notify } from "quasar";
-import { Neo4jApi } from "@/plugins/Neo4jApi";
-import { LlmApi } from "@/plugins/LlmApi";
-import { GlobalVariables } from "@/plugins/GlobalVariables";
+import { createApp } from 'vue'
+import App from './App.vue'
+import router from './router'
+import { Quasar, Notify } from 'quasar'
+import { Neo4jApi } from '@/plugins/Neo4jApi'
+import { LlmApi } from '@/plugins/LlmApi'
+import { GlobalVariables } from '@/plugins/GlobalVariables'
 
-import "@quasar/extras/roboto-font/roboto-font.css";
-import "@quasar/extras/material-icons/material-icons.css";
+import '@quasar/extras/roboto-font/roboto-font.css'
+import '@quasar/extras/material-icons/material-icons.css'
 
-import "quasar/dist/quasar.css";
+import 'quasar/dist/quasar.css'
 
-const app = createApp(App);
+const app = createApp(App)
 
-app.use(router);
+app.use(router)
 app.use(Quasar, {
   plugins: {
-    Notify,
-  },
-});
-app.use(Neo4jApi);
-app.use(LlmApi);
-app.use(GlobalVariables);
+    Notify
+  }
+})
+app.use(Neo4jApi)
+app.use(LlmApi)
+app.use(GlobalVariables)
 
-app.mount("#app");
+app.mount('#app')

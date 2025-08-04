@@ -1,7 +1,7 @@
 <script setup>
-import { ref } from "vue";
+import { ref } from 'vue'
 
-const showFeedbackDialog = ref(false);
+const showFeedbackDialog = ref(false)
 </script>
 
 <template>
@@ -17,8 +17,7 @@ const showFeedbackDialog = ref(false);
           <ul>
             <li>
               Send your feedback by email to
-              <a href="mailto:admin@ihr.live" target="_blank">admin@ihr.live</a
-              >.
+              <a href="mailto:admin@ihr.live" target="_blank">admin@ihr.live</a>.
             </li>
             <li>
               Join our
@@ -26,15 +25,11 @@ const showFeedbackDialog = ref(false);
                 href="https://join.slack.com/t/internethealthreport/shared_invite/zt-19d4e48py-~oirVwkINe01gTVEF3o4Kw"
                 >Slack workspace</a
               >
-              and send your feedback as a direct message or in the #iyp-browser
-              channel.
+              and send your feedback as a direct message or in the #iyp-browser channel.
             </li>
             <li>
               Create a new
-              <a
-                href="https://github.com/InternetHealthReport/iyp-browser/issues"
-                >GitHub issue</a
-              >
+              <a href="https://github.com/InternetHealthReport/iyp-browser/issues">GitHub issue</a>
               requesting a new feature.
             </li>
           </ul>

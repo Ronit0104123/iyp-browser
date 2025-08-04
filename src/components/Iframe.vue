@@ -1,34 +1,28 @@
 <script setup>
-import { ref, watch } from "vue";
-import hljs from "highlight.js";
-import "highlight.js/scss/vs.scss";
-import { copyToClipboard } from "quasar";
+import { ref, watch } from 'vue'
+import hljs from 'highlight.js'
+import 'highlight.js/scss/vs.scss'
+import { copyToClipboard } from 'quasar'
 
-const props = defineProps(["query", "queryType"]);
+const props = defineProps(['query', 'queryType'])
 
-const showIframeDialog = ref(false);
-const iFrameCode = ref("");
+const showIframeDialog = ref(false)
+const iFrameCode = ref('')
 
 watch(
   () => props.query,
   () => {
     const query = {
       query: props.query,
-      queryType: props.queryType,
-    };
-    iFrameCode.value = `<iframe src="${window.location.origin}/embed/?session=[${encodeURIComponent(JSON.stringify(query))}]" width="100%" height="500px"></iframe>`;
-  },
-);
+      queryType: props.queryType
+    }
+    iFrameCode.value = `<iframe src="${window.location.origin}/embed/?session=[${encodeURIComponent(JSON.stringify(query))}]" width="100%" height="500px"></iframe>`
+  }
+)
 </script>
 
 <template>
-  <q-btn
-    dense
-    flat
-    icon="integration_instructions"
-    @click="showIframeDialog = true"
-    color="white"
-  >
+  <q-btn dense flat icon="integration_instructions" @click="showIframeDialog = true" color="white">
     <q-tooltip> I-frame </q-tooltip>
   </q-btn>
   <q-dialog v-model="showIframeDialog">

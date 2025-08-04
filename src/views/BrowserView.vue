@@ -1,34 +1,34 @@
 <script setup>
-import { ref, watch, inject } from "vue";
-import InputPanel from "@/components/InputPanel.vue";
-import OutputPanel from "@/components/OutputPanel.vue";
-import { uid, copyToClipboard } from "quasar";
-import { useRoute, useRouter } from "vue-router";
+import { ref, watch, inject } from 'vue'
+import InputPanel from '@/components/InputPanel.vue'
+import OutputPanel from '@/components/OutputPanel.vue'
+import { uid, copyToClipboard } from 'quasar'
+import { useRoute, useRouter } from 'vue-router'
 
-const GlobalVariables = inject("GlobalVariables");
+const GlobalVariables = inject('GlobalVariables')
 
-const route = useRoute();
-const router = useRouter();
-const queries = ref(route.query.session ? JSON.parse(route.query.session) : []);
-const outputPanel = ref();
-const outputPanelHeight = ref(`${GlobalVariables.outputPanelHeight}px`);
+const route = useRoute()
+const router = useRouter()
+const queries = ref(route.query.session ? JSON.parse(route.query.session) : [])
+const outputPanel = ref()
+const outputPanelHeight = ref(`${GlobalVariables.outputPanelHeight}px`)
 
 const runQuery = (query, queryType) => {
-  const uuid = uid();
-  queries.value.push({ query, queryType, uuid });
-};
+  const uuid = uid()
+  queries.value.push({ query, queryType, uuid })
+}
 
 const clearQuery = (uuid) => {
-  queries.value = queries.value.filter((query) => query.uuid !== uuid);
-};
+  queries.value = queries.value.filter((query) => query.uuid !== uuid)
+}
 
 const shareQuery = (query) => {
-  const urlToShare = `${window.location.origin}/?session=[${JSON.stringify(query)}]`;
-  copyToClipboard(urlToShare);
-};
+  const urlToShare = `${window.location.origin}/?session=[${JSON.stringify(query)}]`
+  copyToClipboard(urlToShare)
+}
 
 const updateQuery = (query, uuid) => {
-  const index = queries.value.findIndex((obj) => obj.uuid === uuid);
+  const index = queries.value.findIndex((obj) => obj.uuid === uuid)
   if (
     queries.value[index].query !== query.query ||
     queries.value[index].queryType !== query.queryType
@@ -38,30 +38,30 @@ const updateQuery = (query, uuid) => {
         return {
           ...obj,
           query: query.query,
-          queryType: query.queryType,
-        };
+          queryType: query.queryType
+        }
       }
-      return obj;
-    });
+      return obj
+    })
   }
-};
+}
 
 const pushRoute = () => {
   router.push({
     replace: true,
     query: Object.assign({}, route.query, {
-      session: JSON.stringify(queries.value),
-    }),
-  });
-};
+      session: JSON.stringify(queries.value)
+    })
+  })
+}
 
 watch(
   queries,
   () => {
-    pushRoute();
+    pushRoute()
   },
-  { deep: true },
-);
+  { deep: true }
+)
 </script>
 
 <template>
@@ -108,6 +108,6 @@ watch(
   gap: 16px;
 }
 .output-panel {
-  height: v-bind("outputPanelHeight");
+  height: v-bind('outputPanelHeight');
 }
 </style>

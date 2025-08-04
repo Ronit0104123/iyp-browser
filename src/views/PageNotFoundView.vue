@@ -46,7 +46,7 @@
   display: inline-block;
   width: 100px;
   height: 100px;
-  background-image: url("@/assets/logo.svg");
+  background-image: url('@/assets/logo.svg');
   background-size: cover;
   -webkit-transform: scale(1.4);
   -ms-transform: scale(1.4);
