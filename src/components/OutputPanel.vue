@@ -107,6 +107,11 @@ const handleEditorHeightChange = (newHeight) => {
   outputPanel.value.style.height = `${height + diff}px`;
 };
 
+const handleNodeExpanded = ({ newNodes, newRels }) => {
+  nodes.value.push(...newNodes);
+  relationships.value.push(...newRels);
+};
+
 onMounted(() => {
   run(props.query, props.queryTypeInput);
   if (!props.disableResizer) {
@@ -184,7 +189,7 @@ onMounted(() => {
               v-if="nodes.length"
               class="output-tab-panel"
             >
-              <GraphOutput :nodes="nodes" :relationships="relationships" />
+              <GraphOutput :nodes="nodes" :relationships="relationships" @nodeExpanded="handleNodeExpanded"/>
             </q-tab-panel>
             <q-tab-panel
               name="table"
