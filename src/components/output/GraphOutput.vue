@@ -71,7 +71,7 @@ const fetchConnectedNodes = async (nodeId) => {
   const cypher = `
     MATCH (n)
     WHERE elementId(n) = "${nodeId}"
-    MATCH (n)-[r]->(m)
+    MATCH (n)-[r]-(m)
     WITH type(r) AS relType, r, m
     WITH relType, collect({r: r, m: m}) AS connections
     UNWIND connections[..1] AS conn
