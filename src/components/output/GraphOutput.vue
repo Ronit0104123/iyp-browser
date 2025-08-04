@@ -8,10 +8,13 @@ import {
   HoverInteraction,
   ClickInteraction,
 } from "@neo4j-nvl/interaction-handlers";
+import { useQuasar } from 'quasar'
 
 const Neo4jApi = inject("Neo4jApi");
 const emit = defineEmits(['nodeExpanded']);
 const props = defineProps(["nodes", "relationships"]);
+
+const q = useQuasar()
 
 const graph = ref();
 const properties = ref({});
@@ -91,7 +94,15 @@ const nodeExpansion = async (nodeId) => {
     });
   }
   else{
-    console.log("node is not expandable");
+    q.notify({
+      message: "Node is not expandable",
+      position: "top",
+      type: "info",
+      color: "primary",
+      actions: [
+        { icon: "close", color: 'white', round: true, handler: () => {} }
+      ]
+    })
   }
 }
 
