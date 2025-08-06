@@ -6,9 +6,6 @@ class Neo4jDB:
     def __init__(self, uri, user, password, database=None):
         self.driver = GraphDatabase.driver(uri, auth=(user, password))
         self.database = database
-        self.schema = self.generate_schema()
-        self.export_schema()
-        # print(self.driver.get_server_info())
     
     def close(self):
         self.driver.close()
@@ -37,14 +34,14 @@ class Neo4jDB:
         }
     
     def generate_schema(self):
-        return {
+        self.schema = {
             "node_properties": self.get_node_properties(),
             "relationship_properties": self.get_relationship_properties(),
             "schema": self.get_relationship_schema(),
         }
     
-    def export_schema(self):
-        with open("neo4j-schema.json", "w") as file:
+    def export_schema(self, filename):
+        with open(filename, "w") as file:
             dump(self.schema, file)
     
     def validate_node_properties(self, node_props):
@@ -58,7 +55,7 @@ class Neo4jDB:
             exists = self.query(cypher_query)["node_exists"][0]
             if not exists:
                 continue
-            node_properties = []
+            node_properties = set()
             for prop in node["properties"]:
                 cypher_query = f"""
                 MATCH (n:{node["labels"]})
@@ -67,8 +64,8 @@ class Neo4jDB:
                 """
                 exists = self.query(cypher_query)["node_property_exists"][0]
                 if exists:
-                    node_properties.append(prop)
-            res[node["labels"]] = node_properties
+                    node_properties.add(prop)
+            res[node["labels"]] = list(node_properties)
         return res
 
     def validate_relationship_properties(self, rel_props):
@@ -82,7 +79,7 @@ class Neo4jDB:
             exists = self.query(cypher_query)["relationship_exists"][0]
             if not exists:
                 continue
-            rel_properties = []
+            rel_properties = set()
             for prop in rel["properties"]:
                 cypher_query = f"""
                 MATCH ()-[r:{rel["type"]}]-()
@@ -91,27 +88,27 @@ class Neo4jDB:
                 """
                 exists = self.query(cypher_query)["relationship_property_exists"][0]
                 if exists:
-                    rel_properties.append(prop)
-            res[rel["type"]] = rel_properties
+                    rel_properties.add(prop)
+            res[rel["type"]] = list(rel_properties)
         return res
 
     def validate_relationship_schema(self, rels):
         res = {}
         for rel in rels:
-            rel_targets = []
+            rel_targets = set()
             for target in rel["target"]:
                 cypher_query = f"""
-                MATCH (n1:{rel["source"]})-[r:{rel["relationship"]}]->(n2:{target})
+                MATCH (n1:{rel["source"]})-[r:{rel["relationship"]}]-(n2:{target})
                 WHERE n1 IS NOT NULL AND r IS NOT NULL AND n2 IS NOT NULL
                 RETURN (COUNT(n1) > 0 AND COUNT(r) > 0 AND COUNT(n2) > 0) AS relationship_schema_exists
                 """
                 exists = self.query(cypher_query)["relationship_schema_exists"][0]
                 if exists:
-                    rel_targets.append(target)
+                    rel_targets.add(target)
             if len(rel_targets):
                 if rel["source"] not in res:
                     res[rel["source"]] = {}
-                res[rel["source"]][rel["relationship"]] = rel_targets
+                res[rel["source"]][rel["relationship"]] = list(rel_targets)
         return res
     
     def query(self, cypher_query, transformation="dataframe"):
@@ -161,6 +158,7 @@ class Neo4jDB:
         d = OrderedDict()
         for i in output:
             d.setdefault((i["source"], i["relationship"]), set()).add(i["target"])
+            d.setdefault((i["target"], i["relationship"]), set()).add(i["source"])
         output = [{"source": k[0], "relationship": k[1], "target": v.pop() if len(v) == 1 else v} for k, v in d.items()]
         for i in output:
             if type(i["target"]) is set:
@@ -177,33 +175,5 @@ if __name__ == "__main__":
     DATABASE = "neo4j"
 
     db = Neo4jDB(URI, USER, PASSWORD, DATABASE)
-
-# TODO:
-# - update the deprecated function
-# - remove duplicates from schema
-# - add underected schema version
-#
-# sample code:
-# import json
-#
-# schema = json.load(open("/home/dimitrios/dimitrios/neo4j-schema.json", "r"))
-#
-# undericted_schema = {}
-# for node_A in schema["schema"]:
-#     if node_A not in undericted_schema:
-#         undericted_schema[node_A] = {}
-#     for relationship in schema["schema"][node_A]:
-#         if relationship not in undericted_schema[node_A]:
-#             undericted_schema[node_A][relationship] = []
-#         for node_B in schema["schema"][node_A][relationship]:
-#             if node_B not in undericted_schema[node_A][relationship]:
-#                 undericted_schema[node_A][relationship].append(node_B)
-#             if node_B not in undericted_schema:
-#                 undericted_schema[node_B] = {}
-#             if relationship not in undericted_schema[node_B]:
-#                 undericted_schema[node_B][relationship] = []
-#             if node_A not in undericted_schema[node_B][relationship]:
-#                 undericted_schema[node_B][relationship].append(node_A)
-#
-# schema["schema"] = undericted_schema
-# json.dump(schema, open("/home/dimitrios/dimitrios/neo4j-schema-fix.json", "w"))
+    db.generate_schema()
+    db.export_schema("neo4j-schema.json")
