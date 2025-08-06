@@ -9,12 +9,10 @@ const GlobalVariables = inject('GlobalVariables')
 
 const emits = defineEmits(['run', 'clear', 'editorHeightChanged'])
 
-const props = defineProps(['cypherInput', 'textInput', 'activeTab', 'serveInOutput'])
+const props = defineProps(['cypherInput', 'serveInOutput'])
 
 const code = ref()
-const tab = ref('')
 let cypher = ''
-let text = ''
 let editor = null
 const minHeight = 3
 const maxHeight = 10
@@ -36,15 +34,10 @@ const updateEditorHeight = () => {
 const runQuery = () => {
   const getValue = editor.getValue()
   if (getValue !== '') {
-    emits('run', getValue, tab.value)
-    if (props.serveInOutput) {
-      if (tab.value === 'cypher') {
-        text = ''
-      }
-    } else {
+    emits('run', getValue)
+    if (!props.serveInOutput) {
       editor.setValue('')
       cypher = ''
-      text = ''
     }
   }
 }
@@ -53,48 +46,20 @@ const clearQuery = () => {
   if (!props.serveInOutput) {
     editor.setValue('')
     cypher = ''
-    text = ''
-    tab.value = 'cypher'
   } else {
     emits('clear')
   }
 }
 
-watch(tab, (newTab, oldTab) => {
-  if (newTab === 'text' && oldTab === 'cypher') {
-    cypher = editor.getValue()
-    editor.setValue(text)
-  } else if (newTab === 'cypher' && oldTab === 'text') {
-    text = editor.getValue()
-    editor.setValue(cypher)
-  }
-  monaco.editor.setModelLanguage(editor.getModel(), tab.value)
-})
-
 watch(
   () => props.cypherInput,
   () => {
     cypher = props.cypherInput
-    if (props.activeTab === 'cypher') {
-      tab.value = 'cypher'
-      editor.setValue(cypher)
-    }
-  }
-)
-
-watch(
-  () => props.textInput,
-  () => {
-    text = props.textInput
-    if (props.activeTab === 'text') {
-      tab.value = 'text'
-      editor.setValue(text)
-    }
+    editor.setValue(cypher)
   }
 )
 
 onMounted(() => {
-  tab.value = 'cypher'
   editor = monaco.editor.create(code.value, {
     value: '',
     language: 'cypher',
@@ -308,12 +273,6 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="input-container row">
-    <!-- <q-tabs v-model="tab" class="input-language-switcher" vertical dense>
-      <q-tab v-if="!GlobalVariables.disableCypherInput" name="cypher" label="Cypher" />
-      <q-tab v-if="!GlobalVariables.disableTextInput" name="text" label="Text" disable>
-        <q-badge>Coming Soon</q-badge>
-      </q-tab>
-    </q-tabs> -->
     <div ref="code" class="code col q-mr-md q-ml-xs"></div>
     <div class="col-auto q-mr-md">
       <div class="row q-mb-sm">

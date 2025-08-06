@@ -10,7 +10,6 @@ const query = ref(JSON.parse(route.query.session)[0])
 <template>
   <OutputPanel
     :query="query.query"
-    :query-type-input="query.queryType"
     :disable-input="true"
     :disable-top-bar="true"
     :disable-resizer="true"

@@ -5,7 +5,6 @@ import App from './App.vue'
 import router from './router'
 import { Quasar, Notify } from 'quasar'
 import { Neo4jApi } from '@/plugins/Neo4jApi'
-import { LlmApi } from '@/plugins/LlmApi'
 import { GlobalVariables } from '@/plugins/GlobalVariables'
 
 import '@quasar/extras/roboto-font/roboto-font.css'
@@ -22,7 +21,6 @@ app.use(Quasar, {
   }
 })
 app.use(Neo4jApi)
-app.use(LlmApi)
 app.use(GlobalVariables)
 
 app.mount('#app')

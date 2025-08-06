@@ -3,35 +3,24 @@ import { ref, inject, onMounted } from 'vue'
 import InputPanel from '@/components/InputPanel.vue'
 import GraphOutput from '@/components/output/GraphOutput.vue'
 import TableOutput from '@/components/output/TableOutput.vue'
-import ExplanationOutput from '@/components/output/ExplanationOutput.vue'
 import { version } from '../../package.json'
 import interact from 'interactjs'
 import Iframe from '@/components/Iframe.vue'
 
 const Neo4jApi = inject('Neo4jApi')
-const LlmApi = inject('LlmApi')
 const GlobalVariables = inject('GlobalVariables')
 
 const emits = defineEmits(['clear', 'share', 'update'])
 
-const props = defineProps([
-  'query',
-  'queryTypeInput',
-  'disableInput',
-  'disableTopBar',
-  'disableResizer'
-])
+const props = defineProps(['query', 'disableInput', 'disableTopBar', 'disableResizer'])
 
 const cypherQuery = ref('')
-const textQuery = ref('')
-const queryType = ref('')
 const tab = ref('graph')
 const loading = ref(false)
 const nodes = ref([])
 const relationships = ref([])
 const rows = ref([])
 const columns = ref([])
-const explanationText = ref('')
 const errorText = ref('')
 const outputPanel = ref()
 const isFullscreen = ref(false)
@@ -56,35 +45,17 @@ const runCypher = async (cypher) => {
     relationships.value = []
     rows.value = []
     columns.value = []
-    explanationText.value = []
   }
   loading.value = false
 }
 
-const runLlm = async (text) => {
-  loading.value = true
-  const res = await LlmApi.run(text)
-  cypherQuery.value = res.cypher
-  explanationText.value = res.explanation
-  runCypher(cypherQuery.value)
-  loading.value = false
-}
-
-const run = async (queryInput, queryInputType) => {
-  queryType.value = queryInputType
+const run = async (queryInput) => {
   errorText.value = ''
   tab.value = 'graph'
-  if (queryType.value === 'cypher') {
-    cypherQuery.value = queryInput
-    textQuery.value = ''
-    runCypher(cypherQuery.value)
-  } else {
-    textQuery.value = queryInput
-    runLlm(textQuery.value)
-  }
+  cypherQuery.value = queryInput
+  runCypher(cypherQuery.value)
   emits('update', {
-    query: queryInput,
-    queryType: queryInputType
+    query: queryInput
   })
 }
 
@@ -121,7 +92,7 @@ const changeTab = (tabName) => {
 }
 
 onMounted(() => {
-  run(props.query, props.queryTypeInput)
+  run(props.query)
   if (!props.disableResizer) {
     interact(outputPanel.value)
       .origin('self')
@@ -151,7 +122,7 @@ onMounted(() => {
       <q-btn dense flat icon="link" color="white" @click="emits('share')">
         <q-tooltip>Share</q-tooltip>
       </q-btn>
-      <Iframe :query="cypherQuery" :query-type="queryType" />
+      <Iframe :query="cypherQuery" />
       <q-btn
         dense
         flat
@@ -168,8 +139,6 @@ onMounted(() => {
     <InputPanel
       v-if="!disableInput"
       :cypher-input="cypherQuery"
-      :text-input="textQuery"
-      :active-tab="queryType"
       :serve-in-output="true"
       @run="run"
       @clear="emits('clear')"
@@ -180,12 +149,6 @@ onMounted(() => {
       <q-btn-group outline class="output-tabs q-ml-md q-pt-sm">
         <q-btn outline label="Graph" v-if="nodes.length" @click="changeTab('graph')" />
         <q-btn outline label="Table" v-if="rows.length" @click="changeTab('table')" />
-        <q-btn
-          outline
-          label="Explanation"
-          v-if="textQuery !== ''"
-          @click="changeTab('explanation')"
-        />
         <q-btn outline label="Error" v-if="errorText !== ''" @click="changeTab('error')" />
       </q-btn-group>
       <q-tab-panels v-model="tab" vertical class="output-panels">
@@ -199,9 +162,6 @@ onMounted(() => {
         </q-tab-panel>
         <q-tab-panel name="table" v-if="rows.length" class="output-tab-panel">
           <TableOutput :rows="rows" :columns="columns" />
-        </q-tab-panel>
-        <q-tab-panel name="explanation" v-if="textQuery !== ''" class="output-tab-panel">
-          <ExplanationOutput :text="explanationText" />
         </q-tab-panel>
         <q-tab-panel name="error" v-if="errorText !== ''" class="output-tab-panel">
           <div class="text-body2 q-pt-xl">{{ errorText }}</div>

@@ -4,7 +4,7 @@ import hljs from 'highlight.js'
 import 'highlight.js/scss/vs.scss'
 import { copyToClipboard } from 'quasar'
 
-const props = defineProps(['query', 'queryType'])
+const props = defineProps(['query'])
 
 const showIframeDialog = ref(false)
 const iFrameCode = ref('')
@@ -13,8 +13,7 @@ watch(
   () => props.query,
   () => {
     const query = {
-      query: props.query,
-      queryType: props.queryType
+      query: props.query
     }
     iFrameCode.value = `<iframe src="${window.location.origin}/embed/?session=[${encodeURIComponent(JSON.stringify(query))}]" width="100%" height="500px"></iframe>`
   }

@@ -13,9 +13,9 @@ const queries = ref(route.query.session ? JSON.parse(route.query.session) : [])
 const outputPanel = ref()
 const outputPanelHeight = ref(`${GlobalVariables.outputPanelHeight}px`)
 
-const runQuery = (query, queryType) => {
+const runQuery = (query) => {
   const uuid = uid()
-  queries.value.push({ query, queryType, uuid })
+  queries.value.push({ query, uuid })
 }
 
 const clearQuery = (uuid) => {
@@ -29,16 +29,12 @@ const shareQuery = (query) => {
 
 const updateQuery = (query, uuid) => {
   const index = queries.value.findIndex((obj) => obj.uuid === uuid)
-  if (
-    queries.value[index].query !== query.query ||
-    queries.value[index].queryType !== query.queryType
-  ) {
+  if (queries.value[index].query !== query.query) {
     queries.value = queries.value.map((obj) => {
       if (obj.uuid === uuid) {
         return {
           ...obj,
-          query: query.query,
-          queryType: query.queryType
+          query: query.query
         }
       }
       return obj
@@ -67,14 +63,13 @@ watch(
 <template>
   <div class="container">
     <div class="browser-input-container">
-      <InputPanel active-tab="cypher" @run="runQuery" />
+      <InputPanel @run="runQuery" />
     </div>
     <div class="browser-output-container">
       <div v-for="query in queries" :key="query.uuid">
         <OutputPanel
           ref="outputPanel"
           :query="query.query"
-          :query-type-input="query.queryType"
           :disable-input="false"
           :disable-top-bar="false"
           :disable-resizer="false"
