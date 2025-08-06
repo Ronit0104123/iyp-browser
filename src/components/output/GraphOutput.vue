@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onUnmounted, watch, inject } from 'vue'
+import { ref, onMounted, onUnmounted, watch, inject, computed } from 'vue'
 import { NVL } from '@neo4j-nvl/base'
 import {
   ZoomInteraction,
@@ -11,10 +11,11 @@ import {
 import { useQuasar } from 'quasar'
 
 const Neo4jApi = inject('Neo4jApi')
-const emit = defineEmits(['nodeExpanded'])
+const emit = defineEmits(['nodeExpanded', 'nodeUnexpanded'])
 const props = defineProps(['nodes', 'relationships'])
 
 const q = useQuasar()
+const expandedNodesMap = ref(new Map())
 
 const graph = ref()
 const properties = ref({})
@@ -85,18 +86,21 @@ const fetchConnectedNodes = async (nodeId) => {
 }
 
 const nodeExpansion = async (nodeId) => {
-  const {
-    nodes: newNodes,
-    relationships: newRels,
-    rows: newRows,
-    columns: newCols
-  } = await fetchConnectedNodes(nodeId)
-  if (newNodes.length) {
-    nvl.addAndUpdateElementsInGraph([...newNodes], [...newRels])
-    emit('nodeExpanded', {
-      newNodes,
-      newRels
-    })
+  const { nodes: newNodes, relationships: newRels } = await fetchConnectedNodes(nodeId)
+
+  const existingNodeIds = new Set(nvl.getNodes().map(n => n.id));
+  const existingRelIds = new Set(nvl.getRelationships().map(r => r.id));
+
+  const filteredNodes = newNodes.filter(n => !existingNodeIds.has(n.id));
+  const filteredRels = newRels.filter(r => !existingRelIds.has(r.id));
+
+  if (filteredNodes.length || filteredRels.length) {
+    nvl.addAndUpdateElementsInGraph(filteredNodes, filteredRels);
+    expandedNodesMap.value.set(nodeId, {
+      nodes: filteredNodes,
+      relationships: filteredRels
+    });
+    emit('nodeExpanded', { newNodes: filteredNodes, newRels: filteredRels });
   } else {
     q.notify({
       message: 'Node is not expandable',
@@ -106,6 +110,39 @@ const nodeExpansion = async (nodeId) => {
       actions: [{ icon: 'close', color: 'white', round: true, handler: () => {} }]
     })
   }
+}
+
+
+const nodeUnexpand = (nodeId) => {
+  const expansion = expandedNodesMap.value.get(nodeId)
+  if (expansion) {
+    const nodeIds = expansion.nodes.map((n) => n.id)
+    const relIds = expansion.relationships.map((r) => r.id)
+    
+    nvl.removeNodesWithIds(nodeIds)
+    nvl.removeRelationshipsWithIds(relIds)
+    expandedNodesMap.value.delete(nodeId)
+
+    const updatedNodes = nvl.getNodes()
+    const updatedRels = nvl.getRelationships()
+
+    emit('nodeUnexpanded', {
+      newNodes: updatedNodes,
+      newRels: updatedRels
+    })
+  } else {
+    q.notify({
+      message: 'Node is not un-expandable',
+      position: 'top',
+      type: 'info',
+      color: 'primary',
+      actions: [{ icon: 'close', color: 'white', round: true, handler: () => {} }]
+    })
+  }
+}
+
+const isNodeExpanded = (nodeId) => {
+  return expandedNodesMap.value.has(nodeId)
 }
 
 const updateNvlElementselectedElement = (element) => {
@@ -255,8 +292,22 @@ onUnmounted(() => {
     <div ref="graph">
       <q-menu v-model="nodeRightClickMenu.clicked" context-menu>
         <q-list dense>
-          <q-item clickable v-close-popup @click="() => nodeExpansion(nodeRightClickMenu.node?.id)">
-            <q-item-section>Expand</q-item-section>
+          <q-item 
+            clickable 
+            v-close-popup 
+            @click="() => {
+              const nodeId = nodeRightClickMenu.node?.id;
+              if (!nodeId) return;
+              if (isNodeExpanded(nodeId)) {
+                nodeUnexpand(nodeId);
+              } else {
+                nodeExpansion(nodeId);
+              }
+            }"
+          >
+            <q-item-section>
+              {{ isNodeExpanded(nodeRightClickMenu.node?.id) ? 'Unexpand' : 'Expand' }}
+            </q-item-section>
           </q-item>
         </q-list>
       </q-menu>

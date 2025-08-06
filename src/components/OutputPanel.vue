@@ -112,6 +112,11 @@ const handleNodeExpanded = ({ newNodes, newRels }) => {
   relationships.value.push(...newRels)
 }
 
+const handleNodeUnexpanded = ({ newNodes, newRels }) => {
+  nodes.value = newNodes
+  relationships.value = newRels
+}
+
 onMounted(() => {
   run(props.query, props.queryTypeInput)
   if (!props.disableResizer) {
@@ -185,6 +190,7 @@ onMounted(() => {
                 :nodes="nodes"
                 :relationships="relationships"
                 @nodeExpanded="handleNodeExpanded"
+                @nodeUnexpanded="handleNodeUnexpanded"
               />
             </q-tab-panel>
             <q-tab-panel name="table" v-if="rows.length" class="output-tab-panel">
