@@ -308,13 +308,13 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="input-container row">
-    <q-tabs v-model="tab" class="input-language-switcher" vertical dense>
+    <!-- <q-tabs v-model="tab" class="input-language-switcher" vertical dense>
       <q-tab v-if="!GlobalVariables.disableCypherInput" name="cypher" label="Cypher" />
       <q-tab v-if="!GlobalVariables.disableTextInput" name="text" label="Text" disable>
         <q-badge>Coming Soon</q-badge>
       </q-tab>
-    </q-tabs>
-    <div ref="code" class="code col q-mr-md"></div>
+    </q-tabs> -->
+    <div ref="code" class="code col q-mr-md q-ml-xs"></div>
     <div class="col-auto q-mr-md">
       <div class="row q-mb-sm">
         <q-btn flat square color="primary" icon="play_arrow" class="full-width" @click="runQuery" />

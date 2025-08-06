@@ -51,8 +51,8 @@ const exportTable = () => {
 </script>
 
 <template>
-  <div class="row q-mb-sm">
-    <div class="col q-mr-md">
+  <div class="row justify-end q-mb-sm">
+    <div class="col-3 q-mr-md">
       <q-input outlined dense debounce="300" v-model="filter" placeholder="Search">
         <template v-slot:append>
           <q-icon name="search" />

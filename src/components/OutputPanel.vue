@@ -26,7 +26,6 @@ const cypherQuery = ref('')
 const textQuery = ref('')
 const queryType = ref('')
 const tab = ref('graph')
-const splitter = ref(110)
 const loading = ref(false)
 const nodes = ref([])
 const relationships = ref([])
@@ -117,6 +116,10 @@ const handleNodeUnexpanded = ({ newNodes, newRels }) => {
   relationships.value = newRels
 }
 
+const changeTab = (tabName) => {
+  tab.value = tabName
+}
+
 onMounted(() => {
   run(props.query, props.queryTypeInput)
   if (!props.disableResizer) {
@@ -174,37 +177,36 @@ onMounted(() => {
     />
     <q-skeleton v-if="loading" class="output-skeleton" animation="wave" />
     <div v-else class="output-container">
-      <q-splitter v-model="splitter" disable unit="px" class="output-tabs">
-        <template v-slot:before>
-          <q-tabs v-model="tab" dense vertical>
-            <q-tab name="graph" label="Graph" v-if="nodes.length" />
-            <q-tab name="table" label="Table" v-if="rows.length" />
-            <q-tab name="explanation" label="Explanation" v-if="textQuery !== ''" />
-            <q-tab name="error" label="Error" v-if="errorText !== ''" />
-          </q-tabs>
-        </template>
-        <template v-slot:after>
-          <q-tab-panels v-model="tab" vertical class="output-panels">
-            <q-tab-panel name="graph" v-if="nodes.length" class="output-tab-panel">
-              <GraphOutput
-                :nodes="nodes"
-                :relationships="relationships"
-                @nodeExpanded="handleNodeExpanded"
-                @nodeUnexpanded="handleNodeUnexpanded"
-              />
-            </q-tab-panel>
-            <q-tab-panel name="table" v-if="rows.length" class="output-tab-panel">
-              <TableOutput :rows="rows" :columns="columns" />
-            </q-tab-panel>
-            <q-tab-panel name="explanation" v-if="textQuery !== ''" class="output-tab-panel">
-              <ExplanationOutput :text="explanationText" />
-            </q-tab-panel>
-            <q-tab-panel name="error" v-if="errorText !== ''" class="output-tab-panel">
-              <p>{{ errorText }}</p>
-            </q-tab-panel>
-          </q-tab-panels>
-        </template>
-      </q-splitter>
+      <q-btn-group outline class="output-tabs q-ml-md q-pt-sm">
+        <q-btn outline label="Graph" v-if="nodes.length" @click="changeTab('graph')" />
+        <q-btn outline label="Table" v-if="rows.length" @click="changeTab('table')" />
+        <q-btn
+          outline
+          label="Explanation"
+          v-if="textQuery !== ''"
+          @click="changeTab('explanation')"
+        />
+        <q-btn outline label="Error" v-if="errorText !== ''" @click="changeTab('error')" />
+      </q-btn-group>
+      <q-tab-panels v-model="tab" vertical class="output-panels">
+        <q-tab-panel name="graph" v-if="nodes.length" class="output-tab-panel">
+          <GraphOutput
+            :nodes="nodes"
+            :relationships="relationships"
+            @nodeExpanded="handleNodeExpanded"
+            @nodeUnexpanded="handleNodeUnexpanded"
+          />
+        </q-tab-panel>
+        <q-tab-panel name="table" v-if="rows.length" class="output-tab-panel">
+          <TableOutput :rows="rows" :columns="columns" />
+        </q-tab-panel>
+        <q-tab-panel name="explanation" v-if="textQuery !== ''" class="output-tab-panel">
+          <ExplanationOutput :text="explanationText" />
+        </q-tab-panel>
+        <q-tab-panel name="error" v-if="errorText !== ''" class="output-tab-panel">
+          <div class="text-body2 q-pt-xl">{{ errorText }}</div>
+        </q-tab-panel>
+      </q-tab-panels>
     </div>
     <div class="footer">
       <div class="row">
@@ -272,7 +274,8 @@ onMounted(() => {
 }
 .output-tabs {
   background-color: #ffffff;
-  height: 100%;
+  position: absolute;
+  z-index: 1;
 }
 .footer {
   width: 100%;

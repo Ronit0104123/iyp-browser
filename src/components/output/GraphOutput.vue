@@ -88,19 +88,19 @@ const fetchConnectedNodes = async (nodeId) => {
 const nodeExpansion = async (nodeId) => {
   const { nodes: newNodes, relationships: newRels } = await fetchConnectedNodes(nodeId)
 
-  const existingNodeIds = new Set(nvl.getNodes().map(n => n.id));
-  const existingRelIds = new Set(nvl.getRelationships().map(r => r.id));
+  const existingNodeIds = new Set(nvl.getNodes().map((n) => n.id))
+  const existingRelIds = new Set(nvl.getRelationships().map((r) => r.id))
 
-  const filteredNodes = newNodes.filter(n => !existingNodeIds.has(n.id));
-  const filteredRels = newRels.filter(r => !existingRelIds.has(r.id));
+  const filteredNodes = newNodes.filter((n) => !existingNodeIds.has(n.id))
+  const filteredRels = newRels.filter((r) => !existingRelIds.has(r.id))
 
   if (filteredNodes.length || filteredRels.length) {
-    nvl.addAndUpdateElementsInGraph(filteredNodes, filteredRels);
+    nvl.addAndUpdateElementsInGraph(filteredNodes, filteredRels)
     expandedNodesMap.value.set(nodeId, {
       nodes: filteredNodes,
       relationships: filteredRels
-    });
-    emit('nodeExpanded', { newNodes: filteredNodes, newRels: filteredRels });
+    })
+    emit('nodeExpanded', { newNodes: filteredNodes, newRels: filteredRels })
   } else {
     q.notify({
       message: 'Node is not expandable',
@@ -112,13 +112,12 @@ const nodeExpansion = async (nodeId) => {
   }
 }
 
-
 const nodeUnexpand = (nodeId) => {
   const expansion = expandedNodesMap.value.get(nodeId)
   if (expansion) {
     const nodeIds = expansion.nodes.map((n) => n.id)
     const relIds = expansion.relationships.map((r) => r.id)
-    
+
     nvl.removeNodesWithIds(nodeIds)
     nvl.removeRelationshipsWithIds(relIds)
     expandedNodesMap.value.delete(nodeId)
@@ -292,22 +291,25 @@ onUnmounted(() => {
     <div ref="graph">
       <q-menu v-model="nodeRightClickMenu.clicked" context-menu>
         <q-list dense>
-          <q-item 
-            clickable 
-            v-close-popup 
-            @click="() => {
-              const nodeId = nodeRightClickMenu.node?.id;
-              if (!nodeId) return;
-              if (isNodeExpanded(nodeId)) {
-                nodeUnexpand(nodeId);
-              } else {
-                nodeExpansion(nodeId);
+          <q-item
+            clickable
+            v-close-popup
+            @click="
+              () => {
+                const nodeId = nodeRightClickMenu.node?.id
+                if (!nodeId) return
+                if (isNodeExpanded(nodeId)) {
+                  nodeUnexpand(nodeId)
+                } else {
+                  nodeExpansion(nodeId)
+                }
               }
-            }"
+            "
           >
-            <q-item-section>
-              {{ isNodeExpanded(nodeRightClickMenu.node?.id) ? 'Unexpand' : 'Expand' }}
+            <q-item-section v-if="isNodeExpanded(nodeRightClickMenu.node?.id)">
+              Unexpand
             </q-item-section>
+            <q-item-section v-else> Expand </q-item-section>
           </q-item>
         </q-list>
       </q-menu>
