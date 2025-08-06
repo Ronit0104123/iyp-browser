@@ -12,10 +12,10 @@ import { useQuasar } from 'quasar'
 
 const Neo4jApi = inject('Neo4jApi')
 const emit = defineEmits(['nodeExpanded', 'nodeUnexpanded'])
-const props = defineProps(['nodes', 'relationships'])
+const props = defineProps(['nodes', 'relationships', 'expandedNodesState'])
 
 const q = useQuasar()
-const expandedNodesMap = ref(new Map())
+const expandedNodesMap = ref(props.expandedNodesState)
 
 const graph = ref()
 const properties = ref({})
@@ -100,7 +100,11 @@ const nodeExpansion = async (nodeId) => {
       nodes: filteredNodes,
       relationships: filteredRels
     })
-    emit('nodeExpanded', { newNodes: filteredNodes, newRels: filteredRels })
+    emit('nodeExpanded', {
+      newNodes: filteredNodes,
+      newRels: filteredRels,
+      expandedState: expandedNodesMap.value
+    })
   } else {
     q.notify({
       message: 'Node is not expandable',
@@ -127,7 +131,8 @@ const nodeUnexpand = (nodeId) => {
 
     emit('nodeUnexpanded', {
       newNodes: updatedNodes,
-      newRels: updatedRels
+      newRels: updatedRels,
+      expandedState: expandedNodesMap.value
     })
   } else {
     q.notify({

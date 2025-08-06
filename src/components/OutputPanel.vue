@@ -26,6 +26,7 @@ const outputPanel = ref()
 const isFullscreen = ref(false)
 const heightBeforeFullscreen = ref('')
 let previousEditorHeight = 0
+const expandedNodesState = ref(new Map())
 
 const runCypher = async (cypher) => {
   loading.value = true
@@ -77,14 +78,16 @@ const handleEditorHeightChange = (newHeight) => {
   outputPanel.value.style.height = `${height + diff}px`
 }
 
-const handleNodeExpanded = ({ newNodes, newRels }) => {
+const handleNodeExpanded = ({ newNodes, newRels, expandedState }) => {
   nodes.value.push(...newNodes)
   relationships.value.push(...newRels)
+  expandedNodesState.value = expandedState
 }
 
-const handleNodeUnexpanded = ({ newNodes, newRels }) => {
+const handleNodeUnexpanded = ({ newNodes, newRels, expandedState }) => {
   nodes.value = newNodes
   relationships.value = newRels
+  expandedNodesState.value = expandedState
 }
 
 const changeTab = (tabName) => {
@@ -156,6 +159,7 @@ onMounted(() => {
           <GraphOutput
             :nodes="nodes"
             :relationships="relationships"
+            :expanded-nodes-state="expandedNodesState"
             @nodeExpanded="handleNodeExpanded"
             @nodeUnexpanded="handleNodeUnexpanded"
           />
