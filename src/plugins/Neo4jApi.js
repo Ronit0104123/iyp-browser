@@ -33,8 +33,13 @@ const Neo4jApi = {
           table: tableResultTransformer(response.data.data.fields, responseDataValues)
         }
       } catch (error) {
+        if (typeof error.response.data === 'object') {
+          return {
+            error: error.response.data.errors[0].message
+          }
+        }
         return {
-          error: error.response.data.errors[0].message
+          error: error.response.data
         }
       }
     }
