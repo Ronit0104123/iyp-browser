@@ -94,10 +94,17 @@ const nodeExpansion = async (nodeId) => {
   const existingNodeIds = new Set(nvl.getNodes().map((n) => n.id))
   const existingRelIds = new Set(nvl.getRelationships().map((r) => r.id))
 
-  const filteredNodes = newNodes.filter((n) => !existingNodeIds.has(n.id))
+  let filteredNodes = newNodes.filter((n) => !existingNodeIds.has(n.id))
   const filteredRels = newRels.filter((r) => !existingRelIds.has(r.id))
 
   if (filteredNodes.length || filteredRels.length) {
+    filteredNodes = filteredNodes.map((fn) => {
+      const hasType = props.nodes.find((n) => n.type === fn.type)
+      if (hasType) {
+        fn.color = hasType.color
+      }
+      return fn
+    })
     nvl.addAndUpdateElementsInGraph(filteredNodes, filteredRels)
     expandedNodesMap.value.set(nodeId, {
       nodes: filteredNodes,
@@ -181,6 +188,28 @@ const nodeColorChange = ({ type, color }) => {
 
 const isNodeExpanded = (nodeId) => {
   return expandedNodesMap.value.has(nodeId)
+}
+
+const getContrastingColor = (color) => {
+  let r
+  let g
+  let b
+
+  color = color.slice(1)
+  if (color.length === 6) {
+    r = parseInt(color.substring(0, 2), 16)
+    g = parseInt(color.substring(2, 4), 16)
+    b = parseInt(color.substring(4, 6), 16)
+  } else if (color.length === 3) {
+    r = parseInt(color[0] + color[0], 16)
+    g = parseInt(color[1] + color[1], 16)
+    b = parseInt(color[2] + color[2], 16)
+  } else {
+    return 'black'
+  }
+
+  const brightness = (r * 299 + g * 587 + b * 114) / 1000
+  return brightness > 128 ? 'black' : 'white'
 }
 
 const updateNvlElementselectedElement = (element) => {
@@ -422,7 +451,7 @@ onUnmounted(() => {
                 >
                   <q-badge
                     :label="node.type"
-                    text-color="black"
+                    :text-color="getContrastingColor(node.color)"
                     :style="`background-color: ${node.color};`"
                   >
                     <q-popup-proxy>
