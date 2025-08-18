@@ -93,8 +93,11 @@ const handleNodeUnexpanded = ({ removedNodeIds, removedRelIds, expandedState }) 
 
 const handleNodeDeleted = ({ removedNodeIds, removedRelIds }) => {
   nodes.value = nodes.value.filter((n) => !removedNodeIds.includes(n.id))
-  nodes.value = nodes.value.filter((n) => !removedNodeIds.includes(n.id))
   relationships.value = relationships.value.filter((r) => !removedRelIds.includes(r.id))
+}
+
+const updateNodeProperties = (updatedNodes) => {
+  nodes.value = updatedNodes
 }
 
 const changeTab = (tabName) => {
@@ -166,11 +169,12 @@ onMounted(() => {
           <GraphOutput
             :nodes="nodes"
             :relationships="relationships"
-            :expandedNodesState="expandedNodesState"
-            :disableResizer="GlobalVariables.disableGraphOverviewPanelResizer"
+            :expanded-nodes-state="expandedNodesState"
+            :disable-resizer="GlobalVariables.disableGraphOverviewPanelResizer"
             @nodeExpanded="handleNodeExpanded"
             @nodeUnexpanded="handleNodeUnexpanded"
             @nodeDeleted="handleNodeDeleted"
+            @updateNodeProperties="updateNodeProperties"
           />
         </q-tab-panel>
         <q-tab-panel name="table" v-if="rows.length" class="output-tab-panel">

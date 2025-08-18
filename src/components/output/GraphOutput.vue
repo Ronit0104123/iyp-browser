@@ -13,7 +13,7 @@ import interact from 'interactjs'
 
 const Neo4jApi = inject('Neo4jApi')
 const GlobalVariables = inject('GlobalVariables')
-const emit = defineEmits(['nodeExpanded', 'nodeUnexpanded', 'nodeDeleted'])
+const emit = defineEmits(['nodeExpanded', 'nodeUnexpanded', 'nodeDeleted', 'updateNodeProperties'])
 const props = defineProps(['nodes', 'relationships', 'expandedNodesState', 'disableResizer'])
 
 const q = useQuasar()
@@ -164,6 +164,19 @@ const nodeDeletion = (nodeId) => {
     removedNodeIds: [nodeId],
     removedRelIds: relIds
   })
+}
+
+const nodeColorChange = ({ type, color }) => {
+  const nodes = nvl.getNodes().map((v) => {
+    if (v.type === type) {
+      v.color = color
+    }
+    return v
+  })
+
+  nvl.addAndUpdateElementsInGraph(nodes)
+
+  emit('updateNodeProperties', nodes)
 }
 
 const isNodeExpanded = (nodeId) => {
@@ -366,79 +379,88 @@ onUnmounted(() => {
       </q-menu>
     </div>
     <div class="overview" ref="overview">
-    <q-card class="overview-card">
-      <q-bar class="fixed-top overview-bar">
-        <div class="row justify-between" style="width: 100%">
-          <q-btn icon="zoom_in" flat square color="white" @click="zoomIn" />
-          <q-btn icon="zoom_out" flat square color="white" @click="zoomOut" />
-          <q-btn icon="center_focus_strong" flat square color="white" @click="reset" />
-          <q-btn :icon="hideOverviewBtnIcon" flat square color="white" @click="hideOverview" />
-        </div>
-      </q-bar>
-      <q-card-section style="padding-top: 0" v-if="!hideOverviewBtn">
-        <div class="fixed-top overview-info">
-          <div v-if="selectedElement.nodeOrRelationship === 'node'">
-            <div class="text-subtitle1">Node properties</div>
-            <q-badge
-              rounded
-              :label="selectedElement.type"
-              text-color="black"
-              :style="`background-color: ${selectedElement.color};`"
-            />
+      <q-card class="overview-card">
+        <q-bar class="fixed-top overview-bar">
+          <div class="row justify-between" style="width: 100%">
+            <q-btn icon="zoom_in" flat square color="white" @click="zoomIn" />
+            <q-btn icon="zoom_out" flat square color="white" @click="zoomOut" />
+            <q-btn icon="center_focus_strong" flat square color="white" @click="reset" />
+            <q-btn :icon="hideOverviewBtnIcon" flat square color="white" @click="hideOverview" />
           </div>
-          <div v-else-if="selectedElement.nodeOrRelationship === 'relationship'">
-            <div class="text-subtitle1">Relationship properties</div>
-            <q-badge
-              :label="selectedElement.type"
-              text-color="white"
-              style="background-color: #848484"
-            />
-          </div>
-          <div v-else>
-            <div class="text-subtitle1">Overview</div>
-            <div class="text-subtitle2">Node labels</div>
-            <div>
-              <span
-                class="q-mr-sm"
-                v-for="(node, index) in nodes
-                  .map((el) => ({ type: el.type, color: el.color }))
-                  .filter(
-                    (value, index, self) => index === self.findIndex((t) => t.type === value.type)
-                  )"
-                :key="index"
-              >
-                <q-badge
-                  :label="node.type"
-                  text-color="black"
-                  :style="`background-color: ${node.color};`"
-                />
-              </span>
+        </q-bar>
+        <q-card-section style="padding-top: 0" v-if="!hideOverviewBtn">
+          <div class="fixed-top overview-info">
+            <div v-if="selectedElement.nodeOrRelationship === 'node'">
+              <div class="text-subtitle1">Node properties</div>
+              <q-badge
+                rounded
+                :label="selectedElement.type"
+                text-color="black"
+                :style="`background-color: ${selectedElement.color};`"
+              />
             </div>
-            <div class="text-subtitle2">Relationship types</div>
-            <div>
-              <span
-                class="q-mr-sm"
-                v-for="(relType, index) in [...new Set(relationships.map((el) => el.type))]"
-                :key="index"
-              >
-                <q-badge :label="relType" text-color="white" style="background-color: #848484" />
-              </span>
+            <div v-else-if="selectedElement.nodeOrRelationship === 'relationship'">
+              <div class="text-subtitle1">Relationship properties</div>
+              <q-badge
+                :label="selectedElement.type"
+                text-color="white"
+                style="background-color: #848484"
+              />
+            </div>
+            <div v-else>
+              <div class="text-subtitle1">Overview</div>
+              <div class="text-subtitle2">Node labels</div>
+              <div>
+                <span
+                  class="q-mr-sm"
+                  v-for="(node, index) in nodes
+                    .map((el) => ({ type: el.type, color: el.color }))
+                    .filter(
+                      (value, index, self) => index === self.findIndex((t) => t.type === value.type)
+                    )"
+                  :key="index"
+                >
+                  <q-badge
+                    :label="node.type"
+                    text-color="black"
+                    :style="`background-color: ${node.color};`"
+                  >
+                    <q-popup-proxy>
+                      <q-color
+                        v-model="node.color"
+                        @change="nodeColorChange(node)"
+                        no-header-tabs
+                        no-footer
+                      />
+                    </q-popup-proxy>
+                  </q-badge>
+                </span>
+              </div>
+              <div class="text-subtitle2">Relationship types</div>
+              <div>
+                <span
+                  class="q-mr-sm"
+                  v-for="(relType, index) in [...new Set(relationships.map((el) => el.type))]"
+                  :key="index"
+                >
+                  <q-badge :label="relType" text-color="white" style="background-color: #848484" />
+                </span>
+              </div>
             </div>
           </div>
-        </div>
-        <q-markup-table flat wrap-cells dense>
-          <thead></thead>
-          <tbody>
-            <tr v-for="(property, key, index) in properties" :key="index">
-              <td class="text-bold text-left overview-property-key">
-                {{ key }}
-              </td>
-              <td class="text-left overview-property-value">{{ property }}</td>
-            </tr>
-          </tbody>
-        </q-markup-table>
-      </q-card-section>
-    </q-card>
+          <q-markup-table flat wrap-cells dense>
+            <thead></thead>
+            <tbody>
+              <tr v-for="(property, key, index) in properties" :key="index">
+                <td class="text-bold text-left overview-property-key">
+                  {{ key }}
+                </td>
+                <td class="text-left overview-property-value">{{ property }}</td>
+              </tr>
+            </tbody>
+          </q-markup-table>
+        </q-card-section>
+      </q-card>
     </div>
   </div>
 </template>
