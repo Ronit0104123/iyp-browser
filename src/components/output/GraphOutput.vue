@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onUnmounted, watch, inject, computed } from 'vue'
+import { ref, onMounted, onUnmounted, inject } from 'vue'
 import { NVL } from '@neo4j-nvl/base'
 import {
   ZoomInteraction,
@@ -37,7 +37,7 @@ const nodeRightClickMenu = ref({
 
 const options = {
   disableTelemetry: true,
-  layout: 'forceDirected',
+  layout: 'forcedirected',
   initialZoom: 1,
   renderer: 'canvas',
   maxZoom: 3,
