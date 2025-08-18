@@ -86,8 +86,8 @@ const handleNodeExpanded = ({ newNodes, newRels, expandedState }) => {
 }
 
 const handleNodeUnexpanded = ({ removedNodeIds, removedRelIds, expandedState }) => {
-  nodes.value = nodes.value.filter(n => !removedNodeIds.includes(n.id))
-  relationships.value = relationships.value.filter(r => !removedRelIds.includes(r.id))
+  nodes.value = nodes.value.filter((n) => !removedNodeIds.includes(n.id))
+  relationships.value = relationships.value.filter((r) => !removedRelIds.includes(r.id))
   expandedNodesState.value = expandedState
 }
 

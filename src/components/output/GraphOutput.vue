@@ -119,7 +119,14 @@ const nodeExpansion = async (nodeId) => {
 const nodeUnexpand = (nodeId) => {
   const expansion = expandedNodesMap.value.get(nodeId)
   if (expansion) {
-    const nodeIds = expansion.nodes.map((n) => n.id)
+    const nodeIds = expansion.nodes
+      .filter((n) => {
+        if (expandedNodesMap.value.has(n.id)) {
+          return false
+        }
+        return true
+      })
+      .map((n) => n.id)
     const relIds = expansion.relationships.map((r) => r.id)
 
     nvl.removeNodesWithIds(nodeIds)
@@ -269,13 +276,6 @@ const init = (nodes, relationships) => {
     })
   }
 }
-
-// watch(props, () => {
-//   if (nvl) {
-//     nvl.destroy()
-//   }
-//   init(props.nodes, props.relationships)
-// })
 
 onMounted(async () => {
   init(props.nodes, props.relationships)
