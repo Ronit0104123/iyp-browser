@@ -291,7 +291,7 @@ onUnmounted(() => {
 <template>
   <div class="graph">
     <div ref="graph">
-      <q-menu v-model="nodeRightClickMenu.clicked" context-menu>
+      <q-menu v-if="nodeRightClickMenu.clicked" context-menu>
         <q-list dense>
           <q-item
             clickable
