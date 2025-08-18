@@ -91,6 +91,12 @@ const handleNodeUnexpanded = ({ removedNodeIds, removedRelIds, expandedState }) 
   expandedNodesState.value = expandedState
 }
 
+const handleNodeDeleted = ({ removedNodeIds, removedRelIds }) => {
+  nodes.value = nodes.value.filter((n) => !removedNodeIds.includes(n.id))
+  nodes.value = nodes.value.filter((n) => !removedNodeIds.includes(n.id))
+  relationships.value = relationships.value.filter((r) => !removedRelIds.includes(r.id))
+}
+
 const changeTab = (tabName) => {
   tab.value = tabName
 }
@@ -163,6 +169,7 @@ onMounted(() => {
             :expandedNodesState="expandedNodesState"
             @nodeExpanded="handleNodeExpanded"
             @nodeUnexpanded="handleNodeUnexpanded"
+            @nodeDeleted="handleNodeDeleted"
           />
         </q-tab-panel>
         <q-tab-panel name="table" v-if="rows.length" class="output-tab-panel">

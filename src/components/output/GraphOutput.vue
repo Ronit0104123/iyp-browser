@@ -11,7 +11,7 @@ import {
 import { useQuasar } from 'quasar'
 
 const Neo4jApi = inject('Neo4jApi')
-const emit = defineEmits(['nodeExpanded', 'nodeUnexpanded'])
+const emit = defineEmits(['nodeExpanded', 'nodeUnexpanded', 'nodeDeleted'])
 const props = defineProps(['nodes', 'relationships', 'expandedNodesState'])
 
 const q = useQuasar()
@@ -147,6 +147,20 @@ const nodeUnexpand = (nodeId) => {
       actions: [{ icon: 'close', color: 'white', round: true, handler: () => {} }]
     })
   }
+}
+
+const nodeDeletion = (nodeId) => {
+  const relIds = props.relationships
+    .filter((r) => r.from === nodeId || r.to === nodeId)
+    .map((r) => r.id)
+
+  nvl.removeNodesWithIds([nodeId])
+  nvl.removeRelationshipsWithIds(relIds)
+
+  emit('nodeDeleted', {
+    removedNodeIds: [nodeId],
+    removedRelIds: relIds
+  })
 }
 
 const isNodeExpanded = (nodeId) => {
@@ -308,10 +322,23 @@ onUnmounted(() => {
               }
             "
           >
-            <q-item-section v-if="isNodeExpanded(nodeRightClickMenu.node?.id)">
-              Unexpand
+            <q-item-section v-if="!isNodeExpanded(nodeRightClickMenu.node?.id)">
+              Expand
             </q-item-section>
-            <q-item-section v-else> Expand </q-item-section>
+            <q-item-section v-else> Unexpand </q-item-section>
+          </q-item>
+          <q-item
+            clickable
+            v-close-popup
+            @click="
+              () => {
+                const nodeId = nodeRightClickMenu.node?.id
+                if (!nodeId) return
+                nodeDeletion(nodeId)
+              }
+            "
+          >
+            <q-item-section> Delete </q-item-section>
           </q-item>
         </q-list>
       </q-menu>
