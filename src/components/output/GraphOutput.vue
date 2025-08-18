@@ -195,6 +195,17 @@ const getContrastingColor = (color) => {
   let g
   let b
 
+  if (!color.startsWith('#')) {
+    q.notify({
+      message: 'Color must be in hex format',
+      position: 'top',
+      type: 'info',
+      color: 'primary',
+      actions: [{ icon: 'close', color: 'white', round: true, handler: () => {} }]
+    })
+    return 'black'
+  }
+
   color = color.slice(1)
   if (color.length === 6) {
     r = parseInt(color.substring(0, 2), 16)
@@ -205,6 +216,13 @@ const getContrastingColor = (color) => {
     g = parseInt(color[1] + color[1], 16)
     b = parseInt(color[2] + color[2], 16)
   } else {
+    q.notify({
+      message: 'Invalid hex color format',
+      position: 'top',
+      type: 'info',
+      color: 'primary',
+      actions: [{ icon: 'close', color: 'white', round: true, handler: () => {} }]
+    })
     return 'black'
   }
 
