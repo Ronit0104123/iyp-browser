@@ -72,7 +72,7 @@ watch(
           :query="query.query"
           :disable-input="false"
           :disable-top-bar="false"
-          :disable-resizer="false"
+          :disable-resizer="GlobalVariables.disableOutputPanelResizer"
           @clear="clearQuery(query.uuid)"
           @share="shareQuery(query)"
           @update="updateQuery($event, query.uuid)"

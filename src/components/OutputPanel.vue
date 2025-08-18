@@ -167,6 +167,7 @@ onMounted(() => {
             :nodes="nodes"
             :relationships="relationships"
             :expandedNodesState="expandedNodesState"
+            :disableResizer="GlobalVariables.disableGraphOverviewPanelResizer"
             @nodeExpanded="handleNodeExpanded"
             @nodeUnexpanded="handleNodeUnexpanded"
             @nodeDeleted="handleNodeDeleted"

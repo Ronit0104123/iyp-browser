@@ -9,10 +9,12 @@ import {
   ClickInteraction
 } from '@neo4j-nvl/interaction-handlers'
 import { useQuasar } from 'quasar'
+import interact from 'interactjs'
 
 const Neo4jApi = inject('Neo4jApi')
+const GlobalVariables = inject('GlobalVariables')
 const emit = defineEmits(['nodeExpanded', 'nodeUnexpanded', 'nodeDeleted'])
-const props = defineProps(['nodes', 'relationships', 'expandedNodesState'])
+const props = defineProps(['nodes', 'relationships', 'expandedNodesState', 'disableResizer'])
 
 const q = useQuasar()
 const expandedNodesMap = ref(props.expandedNodesState)
@@ -34,6 +36,7 @@ const nodeRightClickMenu = ref({
   node: null,
   clicked: false
 })
+const graphOverviewPanelWidth = ref(`${GlobalVariables.graphOverviewPanelWidth}px`)
 
 const options = {
   disableTelemetry: true,
@@ -293,6 +296,25 @@ const init = (nodes, relationships) => {
 
 onMounted(async () => {
   init(props.nodes, props.relationships)
+  if (!props.disableResizer) {
+    interact(overview.value)
+      .origin('self')
+      .resizable({
+        edges: { top: false, left: true, bottom: false, right: false },
+        inertia: true,
+        listeners: {
+          move: (event) => {
+            overview.value.style.width = `${event.rect.width}px`
+          }
+        },
+        modifiers: [
+          interact.modifiers.restrictSize({
+            min: { width: GlobalVariables.graphOverviewPanelWidth },
+            max: { width: 800 }
+          })
+        ]
+      })
+  }
 })
 
 onUnmounted(() => {
@@ -343,7 +365,8 @@ onUnmounted(() => {
         </q-list>
       </q-menu>
     </div>
-    <q-card class="overview" ref="overview">
+    <div class="overview" ref="overview">
+    <q-card class="overview-card">
       <q-bar class="fixed-top overview-bar">
         <div class="row justify-between" style="width: 100%">
           <q-btn icon="zoom_in" flat square color="white" @click="zoomIn" />
@@ -416,6 +439,7 @@ onUnmounted(() => {
         </q-markup-table>
       </q-card-section>
     </q-card>
+    </div>
   </div>
 </template>
 
@@ -431,13 +455,17 @@ onUnmounted(() => {
   position: absolute;
   top: 0px;
   right: 0px;
-  width: 250px;
+  width: v-bind('graphOverviewPanelWidth');
   height: 100%;
+  overflow-y: auto;
+}
+.overview-card {
+  height: 100%;
+  overflow-y: auto;
   border-top-left-radius: 4px;
   border-top-right-radius: 0px;
   border-bottom-left-radius: 0px;
   border-bottom-right-radius: 0px;
-  overflow-y: auto;
 }
 .overview-property-key {
   max-width: 70px;
