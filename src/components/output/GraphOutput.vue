@@ -20,12 +20,14 @@ const q = useQuasar()
 const expandedNodesMap = ref(props.expandedNodesState)
 
 const graph = ref()
-const properties = ref({})
 const selectedElement = ref({
   nodeOrRelationship: '',
   id: '',
   type: '',
   color: '',
+  captionKey: '',
+  caption: '',
+  properties: {},
   clicked: false
 })
 const hideOverviewBtn = ref(false)
@@ -102,6 +104,8 @@ const nodeExpansion = async (nodeId) => {
       const hasType = props.nodes.find((n) => n.type === fn.type)
       if (hasType) {
         fn.color = hasType.color
+        fn.captionKey = hasType.captionKey
+        fn.caption = hasType.caption
       }
       return fn
     })
@@ -186,6 +190,24 @@ const nodeColorChange = ({ type, color }) => {
   emit('updateNodeProperties', nodes)
 }
 
+const nodeCaptionChange = ({ type, captionKey, properties }) => {
+  const nodes = nvl.getNodes().map((v) => {
+    if (v.type === type) {
+      v.captionKey = captionKey
+      if (captionKey === '<type>') {
+        v.caption = type
+      } else {
+        v.caption = properties[captionKey]
+      }
+    }
+    return v
+  })
+
+  nvl.addAndUpdateElementsInGraph(nodes)
+
+  emit('updateNodeProperties', nodes)
+}
+
 const isNodeExpanded = (nodeId) => {
   return expandedNodesMap.value.has(nodeId)
 }
@@ -246,9 +268,11 @@ const updateNvlElementselectedElement = (element) => {
     selectedElement.value.type = ''
     selectedElement.value.color = ''
     selectedElement.value.clicked = false
-    properties.value = {}
+    selectedElement.value.properties = {}
+    selectedElement.value.captionKey = ''
+    selectedElement.value.caption = ''
   } else if (element && selectedElement.value.id === '') {
-    properties.value = element.properties
+    selectedElement.value.properties = element.properties
     element.selected = true
     if (element.nodeOrRelationship === 'node') {
       nvl.addAndUpdateElementsInGraph([element], [])
@@ -259,8 +283,10 @@ const updateNvlElementselectedElement = (element) => {
     selectedElement.value.nodeOrRelationship = element.nodeOrRelationship
     selectedElement.value.type = element.type
     selectedElement.value.color = element.color
+    selectedElement.value.captionKey = element.captionKey
+    selectedElement.value.caption = element.caption
   } else if (element && element?.id !== selectedElement.value.id) {
-    properties.value = element.properties
+    selectedElement.value.properties = element.properties
     element.selected = true
     if (selectedElement.value.nodeOrRelationship === 'node') {
       const oldNode = nvl.getNodeById(selectedElement.value.id)
@@ -290,6 +316,8 @@ const updateNvlElementselectedElement = (element) => {
     selectedElement.value.nodeOrRelationship = element.nodeOrRelationship
     selectedElement.value.type = element.type
     selectedElement.value.color = element.color
+    selectedElement.value.captionKey = element.captionKey
+    selectedElement.value.caption = element.caption
   }
 }
 
@@ -303,17 +331,21 @@ const init = (nodes, relationships) => {
     new HoverInteraction(nvl).updateCallback('onHover', (element, hitElements, event) => {
       if (!selectedElement.value.clicked) {
         if (element) {
-          properties.value = element.properties
+          selectedElement.value.properties = element.properties
           selectedElement.value.id = ''
           selectedElement.value.nodeOrRelationship = element.nodeOrRelationship
           selectedElement.value.type = element.type
           selectedElement.value.color = element.color
+          selectedElement.value.captionKey = element.captionKey
+          selectedElement.value.caption = element.caption
         } else {
-          properties.value = {}
+          selectedElement.value.properties = {}
           selectedElement.value.id = ''
           selectedElement.value.nodeOrRelationship = ''
           selectedElement.value.type = ''
           selectedElement.value.color = ''
+          selectedElement.value.captionKey = ''
+          selectedElement.value.caption = ''
         }
       }
     })
@@ -446,12 +478,24 @@ onUnmounted(() => {
                 :style="`background-color: ${selectedElement.color};`"
               >
                 <q-popup-proxy>
-                  <q-color
-                    v-model="selectedElement.color"
-                    @change="nodeColorChange(selectedElement)"
-                    no-header-tabs
-                    no-footer
-                  />
+                  <q-card>
+                    <q-card-section>
+                      <div class="text-subtitle1">Customize Style</div>
+                      <q-color
+                        v-model="selectedElement.color"
+                        @change="nodeColorChange(selectedElement)"
+                        no-header-tabs
+                        no-footer
+                      />
+                      <q-select
+                        v-model="selectedElement.captionKey"
+                        :options="Object.keys(selectedElement.properties).concat(['<type>'])"
+                        label="Caption"
+                        outlined
+                        @update:model-value="nodeCaptionChange(selectedElement)"
+                      />
+                    </q-card-section>
+                  </q-card>
                 </q-popup-proxy>
               </q-badge>
             </div>
@@ -469,11 +513,9 @@ onUnmounted(() => {
               <div>
                 <span
                   class="q-mr-sm"
-                  v-for="(node, index) in nodes
-                    .map((el) => ({ type: el.type, color: el.color }))
-                    .filter(
-                      (value, index, self) => index === self.findIndex((t) => t.type === value.type)
-                    )"
+                  v-for="(node, index) in nodes.filter(
+                    (value, index, self) => index === self.findIndex((t) => t.type === value.type)
+                  )"
                   :key="index"
                 >
                   <q-badge
@@ -482,12 +524,25 @@ onUnmounted(() => {
                     :style="`background-color: ${node.color};`"
                   >
                     <q-popup-proxy>
-                      <q-color
-                        v-model="node.color"
-                        @change="nodeColorChange(node)"
-                        no-header-tabs
-                        no-footer
-                      />
+                      <q-card>
+                        <q-card-section>
+                          <div class="text-subtitle1">Customize Style</div>
+                          <q-color
+                            v-model="node.color"
+                            @change="nodeColorChange(node)"
+                            no-header-tabs
+                            no-footer
+                            flat
+                          />
+                          <q-select
+                            v-model="node.captionKey"
+                            :options="Object.keys(node.properties).concat(['<type>'])"
+                            label="Caption"
+                            outlined
+                            @update:model-value="nodeCaptionChange(node)"
+                          />
+                        </q-card-section>
+                      </q-card>
                     </q-popup-proxy>
                   </q-badge>
                 </span>
@@ -507,7 +562,7 @@ onUnmounted(() => {
           <q-markup-table flat wrap-cells dense>
             <thead></thead>
             <tbody>
-              <tr v-for="(property, key, index) in properties" :key="index">
+              <tr v-for="(property, key, index) in selectedElement.properties" :key="index">
                 <td class="text-bold text-left overview-property-key">
                   {{ key }}
                 </td>
