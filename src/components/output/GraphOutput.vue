@@ -442,9 +442,18 @@ onUnmounted(() => {
               <q-badge
                 rounded
                 :label="selectedElement.type"
-                text-color="black"
+                :text-color="getContrastingColor(selectedElement.color)"
                 :style="`background-color: ${selectedElement.color};`"
-              />
+              >
+                <q-popup-proxy>
+                  <q-color
+                    v-model="selectedElement.color"
+                    @change="nodeColorChange(selectedElement)"
+                    no-header-tabs
+                    no-footer
+                  />
+                </q-popup-proxy>
+              </q-badge>
             </div>
             <div v-else-if="selectedElement.nodeOrRelationship === 'relationship'">
               <div class="text-subtitle1">Relationship properties</div>
